@@ -38,8 +38,10 @@ func Auth() gin.HandlerFunc {
 
 		authHeader := strings.Split(token, "Bearer ")
 		if len(authHeader) != 2 || authHeader[0] == "null" {
-			c.Writer.WriteHeader(http.StatusUnauthorized)
-			c.Writer.Write([]byte("Malformed Token"))
+			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Malformed token",
+			})
 			log.Fatal("Malformed token")
 		} else {
 			if claims := ParseJwtToken(authHeader[1]); claims != nil {
@@ -52,8 +54,10 @@ func Auth() gin.HandlerFunc {
 
 				c.Set(GinCtxAuthKey, claims)
 			} else {
-				c.Writer.WriteHeader(http.StatusUnauthorized)
-				c.Writer.Write([]byte("you are Unauthorized or your token is expired"))
+				c.AbortWithStatus(http.StatusUnauthorized)
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"message": "You are Unauthorized or your token is expired",
+				})
 			}
 
 		}
