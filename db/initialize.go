@@ -11,17 +11,17 @@ import (
 )
 
 var (
-	db *sqlx.DB
+	Sqlx *sqlx.DB
 )
 
 func Initialize() {
 	drv, err := sql.Open("mysql", config.MysqlDsn)
-	db = sqlx.NewDb(drv, "mysql")
+	Sqlx = sqlx.NewDb(drv, "mysql")
 
-	db.SetMaxIdleConns(10)
-	db.SetMaxOpenConns(100)
-	db.SetConnMaxLifetime(time.Hour)
-	defer db.Close()
+	Sqlx.SetMaxIdleConns(10)
+	Sqlx.SetMaxOpenConns(100)
+	Sqlx.SetConnMaxLifetime(time.Hour)
+	defer Sqlx.Close()
 
 	if err != nil {
 		panic(err.Error())
