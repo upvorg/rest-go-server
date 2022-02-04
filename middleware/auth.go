@@ -12,11 +12,8 @@ import (
 	"upv.life/server/config"
 )
 
-type contextKey string
-
 const (
-	ctxAuthKey    contextKey = "ctxAuthKey"
-	GinCtxAuthKey string     = "ginCtxAuthKey"
+	GinCtxAuthKey string = "ginCtxAuthKey"
 )
 
 var JWT_TOKEN_SIGN string = config.JwtSalt
