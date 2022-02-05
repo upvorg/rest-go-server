@@ -37,7 +37,7 @@ func Auth() gin.HandlerFunc {
 		if len(authHeader) != 2 || authHeader[0] == "null" {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Malformed token",
+				"msg": "Malformed token",
 			})
 			log.Fatal("Malformed token")
 		} else {
@@ -53,7 +53,7 @@ func Auth() gin.HandlerFunc {
 			} else {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				c.JSON(http.StatusUnauthorized, gin.H{
-					"message": "You are Unauthorized or your token is expired",
+					"msg": "You are Unauthorized or your token is expired",
 				})
 			}
 

@@ -13,8 +13,8 @@ func ShouldBeLogin() gin.HandlerFunc {
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			c.JSON(http.StatusOK, gin.H{
-				"code":    http.StatusUnauthorized,
-				"message": "You are Unauthorized",
+				"code": http.StatusUnauthorized,
+				"msg":  "You are Unauthorized",
 			})
 		}
 	}
