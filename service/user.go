@@ -10,10 +10,7 @@ import (
 
 func Register(user *model.User) (*model.User, error) {
 	// check if user exists
-	if err := user.GetUserByName(); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	if user.ID != 0 {
+	if IsUserExist(user) {
 		return nil, errors.New("The user name already taken.")
 	}
 
@@ -23,11 +20,18 @@ func Register(user *model.User) (*model.User, error) {
 	if _, error := user.Create(); error != nil {
 		return nil, error
 	} else {
-		if user.GetUserByID(); error != nil {
+		if user.GetUserByName(); error != nil {
 			return nil, error
 		}
 		user.Pwd = ""
 
 		return user, nil
 	}
+}
+
+func IsUserExist(user *model.User) bool {
+	if err := user.GetUserByName(); err != nil && err != sql.ErrNoRows {
+		return false
+	}
+	return user.ID != 0
 }

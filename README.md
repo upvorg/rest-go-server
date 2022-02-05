@@ -5,7 +5,6 @@
 ## Go Packages
 
 - gin
-- mysql
+- sqlx
 - squirrel
 - jwt-go
-- ~~ent~~
