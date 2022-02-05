@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +29,6 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": error.Error(),
 		})
-		log.Println(error)
 	} else {
 		user.ID = result.ID
 		c.JSON(http.StatusOK, gin.H{

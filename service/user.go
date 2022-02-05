@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"upv.life/server/common"
 	"upv.life/server/model"
 )
 
@@ -16,7 +17,7 @@ func Register(user *model.User) (*model.User, error) {
 		return nil, errors.New("The user name already taken.")
 	}
 
-	//TODO: password encryption
+	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
 
 	// create user
 	if _, error := user.Create(); error != nil {
