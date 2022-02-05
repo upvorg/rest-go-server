@@ -8,11 +8,10 @@ import (
 )
 
 var (
-	AppMode          string
-	AppPort          string
-	MysqlDsn         string
-	JwtSalt          string
-	UserPasswordSalt string
+	AppMode  string
+	AppPort  string
+	MysqlDsn string
+	JwtSalt  string
 )
 
 func Initialize() {
@@ -23,5 +22,4 @@ func Initialize() {
 	AppPort = os.Getenv("APP_PORT")
 	MysqlDsn = os.Getenv("MYSQL_DSN")
 	JwtSalt = os.Getenv("JWT_SALT")
-	UserPasswordSalt = os.Getenv("USER_PASSWORD_SALT")
 }
