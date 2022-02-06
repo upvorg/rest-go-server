@@ -10,9 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var (
-	Sqlx *sqlx.DB
-)
+var DB *sqlx.DB
 
 func Initialize() {
 	drv, err := sql.Open("mysql", config.MysqlDsn)
@@ -20,8 +18,8 @@ func Initialize() {
 		panic(err.Error())
 	}
 
-	Sqlx = sqlx.NewDb(drv, "mysql")
-	Sqlx.SetMaxIdleConns(10)
-	Sqlx.SetMaxOpenConns(100)
-	Sqlx.SetConnMaxLifetime(time.Hour)
+	DB = sqlx.NewDb(drv, "mysql")
+	DB.SetMaxIdleConns(10)
+	DB.SetMaxOpenConns(100)
+	DB.SetConnMaxLifetime(time.Hour)
 }

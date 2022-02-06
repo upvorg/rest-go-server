@@ -5,10 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/gin-gonic/gin"
 	"upv.life/server/common"
-	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
 	"upv.life/server/service"
@@ -37,7 +35,7 @@ func Register(c *gin.Context) {
 			"msg": error.Error(),
 		})
 	} else {
-		token, err := middleware.GenerateJwtToken(user.ID, user.Name)
+		token, err := middleware.GenerateJwtToken(uint64(user.ID), user.Name)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": err.Error(),
@@ -82,7 +80,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	user.Pwd = ""
-	token, err := middleware.GenerateJwtToken(user.ID, user.Name)
+	token, err := middleware.GenerateJwtToken(uint64(user.ID), user.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": err.Error(),
@@ -122,12 +120,8 @@ func GetUserInfo(c *gin.Context) {
 type GetUsersForm struct {
 	model.Pagination
 	Keyword string `form:"keyword,omitempty"`
-	Level   string `form:"level,omitempty"`
-}
-
-type PaginationUser struct {
-	model.Pagination
-	Data []*model.User `json:"data"`
+	Level   *uint8 `form:"level,omitempty"`
+	Status  *uint8 `form:"status,omitempty"`
 }
 
 func GetUsers(c *gin.Context) {
@@ -139,39 +133,22 @@ func GetUsers(c *gin.Context) {
 		return
 	}
 
-	sq := squirrel.Select("*").From("users")
-	if body.Keyword != "" {
-		like := "%" + body.Keyword + "%"
-		sq = sq.Where(squirrel.Or{
-			squirrel.Like{"name": like},
-			squirrel.Like{"nickname": like},
-		})
-	}
-	if body.Level != "" {
-		sq = sq.Where(squirrel.Eq{"level": body.Level})
-	}
+	user := &model.User{Name: body.Keyword, Level: body.Level, Status: body.Status}
+	users, count, err := user.GetAll((body.Pagination.Page), (body.Pagination.Limit))
 
-	query, arg, _ := sq.Offset(body.Limit * (body.Page - 1)).Limit(body.Limit).ToSql()
-	countQuery, arg, _ := sq.ToSql()
-
-	var count uint64
-	db.Sqlx.Select(count, countQuery, arg...)
-	users := []*model.User{}
-	if err := db.Sqlx.Select(&users, query, arg...); err != nil {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": err.Error(),
 		})
-		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"data": model.PaginationData{
+				Pagination: model.Pagination{
+					Page:  body.Page,
+					Limit: body.Limit,
+					Total: count,
+				},
+				Data: users,
+			}})
 	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"data": PaginationUser{
-			Pagination: model.Pagination{
-				Page:  body.Page,
-				Limit: body.Limit,
-				Total: count/body.Limit + 1,
-			},
-			Data: users,
-		}})
-
 }
