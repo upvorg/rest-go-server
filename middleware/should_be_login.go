@@ -8,7 +8,7 @@ import (
 
 func ShouldBeLogin() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if _, exists := c.Get(GinCtxAuthKey); exists {
+		if _, exists := c.Get(CTX_AUTH_KEY); exists {
 			c.Next()
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)

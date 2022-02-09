@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	GinCtxAuthKey string = "ginCtxAuthKey"
+	CTX_AUTH_KEY string = "ginCtxAuthKey"
 )
 
 var JWT_TOKEN_SIGN string = config.JwtSalt
@@ -49,7 +49,7 @@ func Auth() gin.HandlerFunc {
 				// Access context values in handlers like this
 				// props, _ := c.Request.Context().Value("props").(jwt.MapClaims)
 
-				c.Set(GinCtxAuthKey, claims)
+				c.Set(CTX_AUTH_KEY, claims)
 			} else {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				c.JSON(http.StatusUnauthorized, gin.H{

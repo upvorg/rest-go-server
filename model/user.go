@@ -4,7 +4,6 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	"upv.life/server/db"
 )
@@ -37,17 +36,17 @@ func (User) TableName() string {
 	return "users"
 }
 
-func (this *User) Create() (*User, error) {
-	if result, err := db.DB.NamedExec("INSERT into users (name, nickname, pwd) values (:name, :nickname, :pwd)", this); err != nil {
-		return nil, err
+func (user *User) Create() (*User, error) {
+	if result, err := db.DB.NamedExec("INSERT into users (name, nickname, pwd) values (:name, :nickname, :pwd)", user); err != nil {
+		return user, err
 	} else {
 		id, _ := result.LastInsertId()
-		this.ID = uint64(id)
-		return this, nil
+		user.ID = uint64(id)
+		return user, nil
 	}
 }
 
-func (this *User) GetUserByID() error {
+func (user *User) GetUserByID() error {
 	sql, arg, _ := sq.Select(`
 		id, level, status, name, nickname, avatar, bio, qq, create_time, update_time,
 		(SELECT COUNT(*) FROM likes l WHERE l.uid = users.id) AS like_count,
@@ -55,33 +54,33 @@ func (this *User) GetUserByID() error {
 		(select COUNT(*) from posts p WHERE p.uid = users.id and p.type='video') AS video_count
 	`).
 		From("users").
-		Where(sq.Eq{"id": this.ID}).
+		Where(sq.Eq{"id": user.ID}).
 		ToSql()
-	return db.DB.Get(this, sql, arg...)
+	return db.DB.Get(user, sql, arg...)
 }
 
-func (this *User) GetUserByName() error {
-	return db.DB.Get(this, "SELECT id, level, status, name, nickname, avatar, bio, qq, create_time, update_time from users where name = ?", this.Name)
+func (user *User) GetUserByName() error {
+	return db.DB.Get(user, "SELECT id, level, status, name, nickname, avatar, bio, qq, create_time, update_time from users where name = ?", user.Name)
 }
 
-func (this *User) GetUserByNameWithPwd() error {
-	return db.DB.Get(this, "SELECT id, level, status, name, pwd, nickname, avatar, bio, qq, create_time, update_time from users where name = ?", this.Name)
+func (user *User) GetUserByNameWithPwd() error {
+	return db.DB.Get(user, "SELECT id, level, status, name, pwd, nickname, avatar, bio, qq, create_time, update_time from users where name = ?", user.Name)
 }
 
-func (this *User) GetUsersByNickname() error {
-	return db.DB.Select(this, "SELECT id, level, status, name, nickname, avatar, bio, qq, create_time, update_time from users where nickname like %?%", this.Nickname)
+func (user *User) GetUsersByNickname() error {
+	return db.DB.Select(user, "SELECT id, level, status, name, nickname, avatar, bio, qq, create_time, update_time from users where nickname like %?%", user.Nickname)
 }
 
-func (this *User) Update() error {
-	if _, err := db.DB.NamedExec("UPDATE user set level = :level, status = :status, name = :name, nickname = :nickname, avatar = :avatar, bio = :bio, qq = :qq from users where id = :id", this); err != nil {
+func (user *User) Update() error {
+	if _, err := db.DB.NamedExec("UPDATE user set level = :level, status = :status, name = :name, nickname = :nickname, avatar = :avatar, bio = :bio, qq = :qq from users where id = :id", user); err != nil {
 		return err
 	} else {
 		return nil
 	}
 }
 
-func (this *User) Delete() error {
-	if _, err := db.DB.Exec("DELETE FROM users where id = ?", this.ID); err != nil {
+func (user *User) Delete() error {
+	if _, err := db.DB.Exec("DELETE FROM users where id = ?", user.ID); err != nil {
 		return err
 	} else {
 		return nil
@@ -89,13 +88,12 @@ func (this *User) Delete() error {
 }
 
 // get list with pagination
-func (this *User) GetAll(page, pageSize uint64) ([]User, uint64, error) {
+func (user *User) GetAll(page, pageSize uint64) ([]User, uint64, error) {
 	var users []User
 	var count uint64
-	v := reflect.ValueOf(this)
-	t := reflect.TypeOf(this)
-	countSql := sq.Select("COUNT(id)")
-	sql := sq.Select("id, level, status, name, nickname, avatar, bio, qq, create_time, update_time")
+	v := reflect.ValueOf(user)
+	t := reflect.TypeOf(user)
+	sqlBuilder := sq.StatementBuilder
 
 	if v.Kind() == reflect.Ptr && v.Elem().Kind() == reflect.Struct {
 		v = v.Elem()
@@ -103,51 +101,53 @@ func (this *User) GetAll(page, pageSize uint64) ([]User, uint64, error) {
 	}
 
 	for i := 0; i < v.NumField(); i++ {
-		log.Print(t.Field(i).Name, ":", v.Field(i))
 		switch v.Field(i).Kind() {
-		case reflect.Int:
 		case reflect.Uint:
 		case reflect.Uint8:
 		case reflect.Uint64:
-			// cv := v.Field(i).Convert(reflect.TypeOf(uint64(0)))
-			// if cv.Uint() != 0 {
-			sql = sql.Where(squirrel.Eq{t.Field(i).Name: v.Field(i).Uint()})
-			countSql = countSql.Where(squirrel.Eq{t.Field(i).Name: v.Field(i).Uint()})
-			// }
+			cv := v.Field(i).Convert(reflect.TypeOf(uint64(0)))
+			if cv.Uint() != 0 {
+				sqlBuilder = sqlBuilder.Where(sq.Eq{t.Field(i).Name: v.Field(i).Uint()})
+			}
 		case reflect.String:
 			if v.Field(i).String() != "" {
 				if t.Field(i).Name == "Name" {
 					like := "%" + v.Field(i).String() + "%"
-					sql = sql.Where(squirrel.Or{
-						squirrel.Like{"name": like},
-						squirrel.Like{"nickname": like},
-					})
-					countSql = countSql.Where(squirrel.Or{
-						squirrel.Like{"name": like},
-						squirrel.Like{"nickname": like},
+					sqlBuilder.Where(sq.Or{
+						sq.Like{"name": like},
+						sq.Like{"nickname": like},
 					})
 				} else {
-					sql = sql.Where(squirrel.Eq{t.Field(i).Name: v.Field(i).String()})
-					countSql = countSql.Where(squirrel.Eq{t.Field(i).Name: v.Field(i).String()})
+					sqlBuilder = sqlBuilder.Where(sq.Eq{t.Field(i).Name: v.Field(i).String()})
 				}
 			}
+		case reflect.Ptr:
+			if v.Field(i).Elem().Kind() == reflect.Uint ||
+				v.Field(i).Elem().Kind() == reflect.Uint8 ||
+				v.Field(i).Elem().Kind() == reflect.Uint64 {
+				// get *uint8 value
+				cv := v.Field(i).Elem().Convert(reflect.TypeOf(uint64(0)))
+				sqlBuilder = sqlBuilder.Where(sq.Eq{t.Field(i).Name: cv.Uint()})
+			}
+
 		}
 	}
-	sql = sql.
-		From("users").
+	sql := sqlBuilder.Select("id, level, status, name, nickname, avatar, bio, qq, create_time, update_time").From("users")
+	csql := sqlBuilder.Select("count(id)").From("users").
 		Offset(uint64(pageSize * (page - 1))).
 		Limit(uint64(pageSize))
-	countSql = countSql.From("users")
 
 	query, arg, _ := sql.ToSql()
-	cq, ca, _ := countSql.ToSql()
-	err := db.DB.Select(&users, query, arg...)
-	err = db.DB.QueryRowx(cq, ca...).Scan(&count)
+	cq, ca, _ := csql.ToSql()
 
-	return users, count, err
-}
+	log.Print(query)
 
-func (this *User) Test() {
-	log.Println(this.TableName())
-	this.Test()
+	if err := db.DB.Select(&users, query, arg...); err != nil {
+		return nil, 0, err
+	}
+	if err := db.DB.QueryRowx(cq, ca...).Scan(&count); err != nil {
+		return nil, 0, err
+	}
+
+	return users, count, nil
 }
