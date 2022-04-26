@@ -1,25 +1,27 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"upv.life/server/config"
-
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 )
 
-var DB *sqlx.DB
+var Orm *gorm.DB
 
 func Initialize() {
-	drv, err := sql.Open("mysql", config.MysqlDsn)
+	gorm, err := gorm.Open(mysql.Open(config.MysqlDsn), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())
 	}
 
-	DB = sqlx.NewDb(drv, "mysql")
-	DB.SetMaxIdleConns(10)
-	DB.SetMaxOpenConns(100)
-	DB.SetConnMaxLifetime(time.Hour)
+	Orm = gorm
+	sqlDB, err := gorm.DB()
+	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
+	sqlDB.SetMaxIdleConns(10)
+	// SetMaxOpenConns 设置打开数据库连接的最大数量。
+	sqlDB.SetMaxOpenConns(100)
+	// SetConnMaxLifetime 设置了连接可复用的最大时间。
+	sqlDB.SetConnMaxLifetime(time.Hour)
 }

@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"upv.life/server/common"
+	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
 	"upv.life/server/service"
@@ -59,20 +59,15 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	user := &model.User{
-		Name: body.Name,
-		Pwd:  body.Pwd,
-	}
-	if error := user.GetUserByNameWithPwd(); error != nil {
-		if error == sql.ErrNoRows {
-			Register(c)
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"msg": error.Error(),
-			})
-		}
+
+	var user model.User
+	db.Orm.Where(&model.User{Name: body.Name}).Find(&user)
+
+	if user.ID == 0 {
+		Register(c)
 		return
 	}
+
 	if !common.ComparePasswords(user.Pwd, []byte(body.Pwd)) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": "Invalid password.",
@@ -97,28 +92,23 @@ func Login(c *gin.Context) {
 
 func GetUserInfo(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	user := &model.User{
-		ID: uint64(id),
-	}
-	if err := user.GetUserByID(); err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusNotFound, gin.H{
-				"msg": "User not found.",
-			})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": err.Error(),
-			})
-		}
+	var user model.User
+	db.Orm.Where("id = ?", id).Find(&user)
+	if user.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"msg": "User not found.",
+		})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"data": user,
 	})
 }
 
 type GetUsersForm struct {
-	model.Pagination
+	Page    int    `json:"page" form:"page,default=1" binding:"min=1"`
+	Limit   int    `json:"limit" form:"limit,default=15" binding:"min=1,max=30"`
 	Keyword string `form:"keyword,omitempty"`
 	Level   *uint8 `form:"level,omitempty"`
 	Status  *uint8 `form:"status,omitempty"`
@@ -133,22 +123,8 @@ func GetUsers(c *gin.Context) {
 		return
 	}
 
-	user := &model.User{Name: body.Keyword, Level: body.Level, Status: body.Status}
-	users, count, err := user.GetAll((body.Pagination.Page), (body.Pagination.Limit))
+	var users []model.User
+	db.Orm.Where(map[string]interface{}{"name": body.Keyword, "level": body.Level, "Status": body.Status}).Find(&users).Offset(body.Page).Limit(body.Limit)
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"data": model.PaginationData{
-				Pagination: model.Pagination{
-					Page:  body.Page,
-					Limit: body.Limit,
-					Total: count,
-				},
-				Data: users,
-			}})
-	}
+	c.JSON(http.StatusOK, gin.H{"data": users})
 }

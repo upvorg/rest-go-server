@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"upv.life/server/common"
+	"upv.life/server/db"
 	"upv.life/server/model"
 )
 
@@ -17,10 +18,11 @@ func Register(user *model.User) (*model.User, error) {
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
 
 	// create user
-	if _, error := user.Create(); error != nil {
-		return nil, error
+	result := db.Orm.Create(user)
+	if result.Error != nil {
+		return nil, result.Error
 	} else {
-		if user.GetUserByName(); error != nil {
+		if _, error := GetUserByName(user.Name); error != nil {
 			return nil, error
 		}
 		user.Pwd = ""
@@ -30,8 +32,16 @@ func Register(user *model.User) (*model.User, error) {
 }
 
 func IsUserExist(user *model.User) bool {
-	if err := user.GetUserByName(); err != nil && err != sql.ErrNoRows {
+	if _, err := GetUserByName(user.Name); err != nil && err != sql.ErrNoRows {
 		return false
 	}
 	return user.ID != 0
+}
+
+func GetUserByName(name string) (*model.User, error) {
+	var user model.User
+	if err := db.Orm.Where("name = ?", name).Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
