@@ -90,7 +90,7 @@ func Login(c *gin.Context) {
 	})
 }
 
-func GetUserInfo(c *gin.Context) {
+func GetUserById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var user model.User
 	db.Orm.Where("id = ?", id).Find(&user)
@@ -107,11 +107,9 @@ func GetUserInfo(c *gin.Context) {
 }
 
 type GetUsersForm struct {
-	Page    int    `json:"page" form:"page,default=1" binding:"min=1"`
-	Limit   int    `json:"limit" form:"limit,default=15" binding:"min=1,max=30"`
 	Keyword string `form:"keyword,omitempty"`
-	Level   *uint8 `form:"level,omitempty"`
-	Status  *uint8 `form:"status,omitempty"`
+	Level   *int   `form:"level,omitempty"`
+	Status  *int   `form:"status,omitempty"`
 }
 
 func GetUsers(c *gin.Context) {
@@ -124,7 +122,21 @@ func GetUsers(c *gin.Context) {
 	}
 
 	var users []model.User
-	db.Orm.Where(map[string]interface{}{"name": body.Keyword, "level": body.Level, "Status": body.Status}).Find(&users).Offset(body.Page).Limit(body.Limit)
+	tx := db.Orm.Debug().Scopes(model.Paginate(c))
+
+	if body.Level != nil {
+		tx.Where("level = ?", body.Level)
+	}
+
+	if body.Status != nil {
+		tx.Where("status = ?", body.Status)
+	}
+
+	if body.Keyword != "" {
+		tx.Where("name LIKE ? OR nickname LIKE ?", "%"+body.Keyword+"%", "%"+body.Keyword+"%")
+	}
+
+	tx.Find(&users)
 
 	c.JSON(http.StatusOK, gin.H{"data": users})
 }

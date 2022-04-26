@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type User struct {
@@ -11,12 +9,13 @@ type User struct {
 	Level     uint
 	Status    uint
 	Name      string `gorm:"size:16;unique_index"`
-	Pwd       string
+	Pwd       string `json:"-"`
 	Nickname  string `gorm:"size:16"`
 	Avatar    string
 	Bio       string
-	Qq        string
+	QQ        string
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
-	gorm.Model
+	// Posts     []Post `gorm:"foreignKey:Uid"`
+	// gorm.Model
 }

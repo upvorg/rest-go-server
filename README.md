@@ -4,7 +4,4 @@
 
 ## Go Packages
 
-- gin
-- sqlx
-- squirrel
-- jwt-go
+- go get -d github.com/pilu/fresh

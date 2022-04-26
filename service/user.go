@@ -12,7 +12,7 @@ import (
 func Register(user *model.User) (*model.User, error) {
 	// check if user exists
 	if IsUserExist(user) {
-		return nil, errors.New("The user name already taken.")
+		return nil, errors.New("the user name already taken")
 	}
 
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
