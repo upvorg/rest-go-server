@@ -30,6 +30,12 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 		Preload("Meta").
 		Joins("left join video_metas on video_metas.pid = posts.id")
 
+	tx.Where("posts.type = ?", m.PostType)
+
+	if m.KeyWord != "" {
+		tx.Where("posts.title LIKE ? OR posts.content LIKE ?", "%"+m.KeyWord+"%", "%"+m.KeyWord+"%")
+	}
+
 	if m.Type != "" {
 		tx.Where("video_metas.type = ?", m.Type)
 	}
@@ -41,8 +47,6 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	if m.IsEnd != 0 {
 		tx.Where("video_metas.is_end = ?", m.IsEnd)
 	}
-
-	tx.Where("posts.type = ?", m.PostType)
 
 	if err := tx.Find(&posts).Error; err != nil {
 		return nil, err
@@ -63,12 +67,15 @@ func GetPostsByTag(tag string, c *gin.Context) (*[]model.Post, error) {
 	return &posts, nil
 }
 
-func GetPinedPosts() (*[]model.Post, error) {
+func GetRecommendPosts() (*[]model.Post, error) {
 	var posts []model.Post
-
-	if err := db.Orm.Where("is_pin = ?", 2).Find(&posts).Error; err != nil {
+	if err := db.Orm.Where("is_recommend = ?", 2).Find(&posts).Error; err != nil {
 		return nil, err
 	}
 
 	return &posts, nil
+}
+
+func CreatePost(post *model.Post) error {
+	return db.Orm.Create(post).Error
 }

@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"upv.life/server/config"
+	"upv.life/server/model"
 )
 
 var Orm *gorm.DB
@@ -30,6 +31,12 @@ func Initialize() {
 
 	Orm = gorm
 	sqlDB, _ := gorm.DB()
+	gorm.AutoMigrate(
+		&model.User{},
+		&model.Post{},
+		&model.VideoMetas{},
+		&model.Videos{},
+	)
 
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
 	sqlDB.SetMaxIdleConns(10)

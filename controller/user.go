@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"upv.life/server/common"
@@ -30,7 +29,7 @@ func Register(c *gin.Context) {
 		Nickname: body.Name,
 		Pwd:      body.Pwd,
 	}
-	if _, error := service.Register(user); error != nil {
+	if user, error := service.Register(user); error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": error.Error(),
 		})
@@ -90,10 +89,10 @@ func Login(c *gin.Context) {
 	})
 }
 
-func GetUserById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+func GetUserByName(c *gin.Context) {
+	name := c.Param("name")
 	var user model.User
-	db.Orm.Where("id = ?", id).Find(&user)
+	db.Orm.Where("name = ?", name).Find(&user)
 	if user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"msg": "User not found.",
@@ -139,4 +138,16 @@ func GetUsers(c *gin.Context) {
 	tx.Find(&users)
 
 	c.JSON(http.StatusOK, gin.H{"data": users})
+}
+
+func UpdateUserByName(c *gin.Context) {
+	body := &model.User{}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": common.Translate(err),
+		})
+		return
+	}
+	err := db.Orm.Debug().Model(body).Where("name = ?", c.Param("name")).Updates(body).Error
+	c.JSON(http.StatusOK, gin.H{"err": err})
 }

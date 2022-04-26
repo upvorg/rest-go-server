@@ -18,16 +18,23 @@ func Register(user *model.User) (*model.User, error) {
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
 
 	// create user
-	result := db.Orm.Create(user)
+	result := db.Orm.Debug().Create(&model.User{
+		Name:     user.Name,
+		Nickname: user.Nickname,
+		Pwd:      user.Pwd,
+		Level:    4,
+		Status:   2,
+	})
+
 	if result.Error != nil {
 		return nil, result.Error
 	} else {
-		if _, error := GetUserByName(user.Name); error != nil {
+		if baseuser, error := GetUserByName(user.Name); error != nil {
 			return nil, error
+		} else {
+			return baseuser, nil
 		}
-		user.Pwd = ""
 
-		return user, nil
 	}
 }
 
