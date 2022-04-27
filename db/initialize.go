@@ -36,6 +36,7 @@ func Initialize() {
 		&model.Post{},
 		&model.VideoMetas{},
 		&model.Videos{},
+		&model.Comments{},
 	)
 
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量

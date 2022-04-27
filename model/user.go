@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -16,6 +18,5 @@ type User struct {
 	QQ        string `gorm:"size:14"`
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
-	// Posts     []Post `gorm:"foreignKey:Uid"`
-	// gorm.Model
+	DeletedAt gorm.DeletedAt
 }

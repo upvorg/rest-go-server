@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Post struct {
 	ID          uint   `gorm:"primaryKey"`
@@ -16,7 +20,7 @@ type Post struct {
 	IsRecommend uint `gorm:"default:1"`
 	CreatedAt   *time.Time
 	UpdatedAt   *time.Time
-	DeletedAt   *time.Time
+	DeletedAt   gorm.DeletedAt
 	Meta        *VideoMetas `json:"Meta,omitempty" gorm:"foreignKey:Pid"` // type video
 	Creator     User        `gorm:"foreignKey:Uid;"`                      // type user
 	// LikesCount    int
@@ -32,12 +36,6 @@ type VideoMetas struct {
 	IsEnd       uint8      `gorm:"default:1"`
 	PublishDate *time.Time `json:"-"`
 	UpdatedAt   *time.Time `json:"-"`
-}
-
-type Likes struct {
-	ID  uint `gorm:"primaryKey"`
-	Uid uint
-	Pid uint
 }
 
 //api
