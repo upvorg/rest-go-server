@@ -75,7 +75,3 @@ func GetRecommendPosts() (*[]model.Post, error) {
 
 	return &posts, nil
 }
-
-func CreatePost(post *model.Post) error {
-	return db.Orm.Create(post).Error
-}

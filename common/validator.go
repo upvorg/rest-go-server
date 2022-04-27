@@ -1,6 +1,7 @@
 package common
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin/binding"
@@ -25,6 +26,10 @@ func InitValidator() {
 
 func Translate(err error) string {
 	result := ""
+
+	if reflect.TypeOf(err).Name() != "ValidationErrors" {
+		return err.Error()
+	}
 
 	errors := err.(validator.ValidationErrors)
 	for _, err := range errors {

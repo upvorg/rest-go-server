@@ -11,8 +11,16 @@ import (
 
 func Register(user *model.User) (*model.User, error) {
 	// check if user exists
-	if IsUserExist(user) {
+	if IsUserExistByName(user.Name) {
 		return nil, errors.New("the user name already taken")
+	}
+
+	if !common.CheckUserName(user.Name) {
+		return nil, errors.New("the user name is invalid")
+	}
+
+	if !common.CheckPassword(user.Pwd) {
+		return nil, errors.New("the password is invalid")
 	}
 
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
@@ -38,16 +46,17 @@ func Register(user *model.User) (*model.User, error) {
 	}
 }
 
-func IsUserExist(user *model.User) bool {
-	if _, err := GetUserByName(user.Name); err != nil && err != sql.ErrNoRows {
+func IsUserExistByName(name string) bool {
+	if user, err := GetUserByName(name); err != nil && err != sql.ErrNoRows {
 		return false
+	} else {
+		return user.ID != 0
 	}
-	return user.ID != 0
 }
 
 func GetUserByName(name string) (*model.User, error) {
 	var user model.User
-	if err := db.Orm.Where("name = ?", name).Find(&user).Error; err != nil {
+	if err := db.Orm.Debug().Where("name = ?", name).Find(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

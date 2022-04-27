@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 	"upv.life/server/common"
 	"upv.life/server/db"
+	"upv.life/server/middleware"
 	"upv.life/server/model"
 	"upv.life/server/service"
 )
@@ -67,9 +68,9 @@ func CreatePost(c *gin.Context) {
 		})
 		return
 	}
-	// userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	// body.Uid = uint(userID.(middleware.AuthClaims).UserId)
 
+	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
+	body.Uid = uint(userID.(*middleware.AuthClaims).UserId)
 	if body.Type == "post" && body.Content == "" {
 		c.AbortWithStatusJSON(http.StatusPaymentRequired, gin.H{
 			"msg": "Content is required.",
@@ -79,9 +80,9 @@ func CreatePost(c *gin.Context) {
 
 	var err error
 	if body.Type == "video" {
-		err = service.CreatePost(body)
+		err = db.Orm.Debug().Create(body).Error
 	} else {
-		err = db.Orm.Omit(clause.Associations).Create(body).Error
+		err = db.Orm.Debug().Omit(clause.Associations).Create(body).Error
 	}
 
 	if err != nil {

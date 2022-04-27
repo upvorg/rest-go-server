@@ -18,5 +18,5 @@ type User struct {
 	QQ        string `gorm:"size:14"`
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
-	DeletedAt gorm.DeletedAt
+	DeletedAt gorm.DeletedAt `json:"-"`
 }

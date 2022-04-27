@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,8 +29,6 @@ func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		if !strings.Contains(token, "Bearer") {
-			// mapClaims := AuthClaims{}
-			// c.Set(GinCtxAuthKey, mapClaims)
 			return
 		}
 
@@ -41,7 +40,7 @@ func Auth() gin.HandlerFunc {
 			})
 			log.Fatal("Malformed token")
 		} else {
-			if claims := ParseJwtToken(authHeader[1]); claims != nil {
+			if claims, err := ParseJwtToken(authHeader[1]); claims != nil {
 				// http router 写法
 				// ctx := context.WithValue(c.Request.Context(), ctxAuthKey, claims)
 				// next.ServeHTTP(c.Writer, c.Request.WithContext(ctx))
@@ -53,7 +52,7 @@ func Auth() gin.HandlerFunc {
 			} else {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				c.JSON(http.StatusUnauthorized, gin.H{
-					"msg": "You are Unauthorized or your token is expired",
+					"msg": err.Error(),
 				})
 			}
 
@@ -75,18 +74,34 @@ func GenerateJwtToken(userId uint64, name string) (string, error) {
 	return token, err
 }
 
-func ParseJwtToken(tokenStr string) jwt.Claims {
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+func ParseJwtToken(tokenStr string) (jwt.Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &AuthClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(JWT_TOKEN_SIGN), nil
 	})
+
 	if err != nil {
-		log.Fatal("error while parsing the token" + err.Error())
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+				log.Fatal(errors.New("that's not even a token"))
+				return nil, errors.New("that's not even a token")
+			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				log.Fatal(errors.New("token is expired"))
+				return nil, errors.New("token is expired")
+			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
+				log.Fatal(errors.New("token not active yet"))
+				return nil, errors.New("token not active yet")
+			} else {
+				log.Fatal(errors.New("couldn't handle this token"))
+				return nil, errors.New("couldn't handle this token")
+			}
+		}
 	}
-	if claims, ok := token.Claims.(AuthClaims); ok && token.Valid {
-		return claims
+
+	if claims, ok := token.Claims.(*AuthClaims); ok && token.Valid {
+		return claims, nil
 	}
-	return nil
+	return nil, errors.New("unknow token")
 }

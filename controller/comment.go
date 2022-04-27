@@ -28,11 +28,11 @@ func hasCollectedPost(pid uint, uid uint) bool {
 func LikePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(middleware.AuthClaims).UserId)
+	uid := uint(userID.(*middleware.AuthClaims).UserId)
 
 	if hasLikedPost(uint(id), uid) {
-		c.JSON(http.StatusOK, gin.H{
-			"msg": "You have liked this post.",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "You have liked this post.",
 		})
 		return
 	}
@@ -49,9 +49,11 @@ func LikePostById(c *gin.Context) {
 func UnlikePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(middleware.AuthClaims).UserId)
+	uid := uint(userID.(*middleware.AuthClaims).UserId)
 	if !hasLikedPost(uint(id), uid) {
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "repeatedly",
+		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -62,9 +64,9 @@ func UnlikePostById(c *gin.Context) {
 func CollectPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(middleware.AuthClaims).UserId)
+	uid := uint(userID.(*middleware.AuthClaims).UserId)
 	if hasCollectedPost(uint(id), uid) {
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": "You have collected this post.",
 		})
 		return
@@ -80,9 +82,11 @@ func CollectPostById(c *gin.Context) {
 func UncollectPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(middleware.AuthClaims).UserId)
+	uid := uint(userID.(*middleware.AuthClaims).UserId)
 	if !hasCollectedPost(uint(id), uid) {
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "You have collected this post.",
+		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -108,7 +112,7 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(middleware.AuthClaims).UserId)
+	uid := uint(userID.(*middleware.AuthClaims).UserId)
 	body.Uid = uid
 	pid, _ := strconv.Atoi(c.Param("id"))
 	body.Pid = uint(pid)
