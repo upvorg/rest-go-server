@@ -20,7 +20,7 @@ func Initialize() {
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
 				SlowThreshold:             time.Second,
-				LogLevel:                  logger.Silent,
+				LogLevel:                  logger.Info,
 				IgnoreRecordNotFoundError: false,
 				Colorful:                  false,
 			},
@@ -37,6 +37,8 @@ func Initialize() {
 		&model.VideoMetas{},
 		&model.Videos{},
 		&model.Comments{},
+		&model.Likes{},
+		&model.Collects{},
 	)
 
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量

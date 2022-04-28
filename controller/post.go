@@ -80,9 +80,9 @@ func CreatePost(c *gin.Context) {
 
 	var err error
 	if body.Type == "video" {
-		err = db.Orm.Debug().Create(body).Error
+		err = db.Orm.Create(body).Error
 	} else {
-		err = db.Orm.Debug().Omit(clause.Associations).Create(body).Error
+		err = db.Orm.Omit(clause.Associations).Create(body).Error
 	}
 
 	if err != nil {
@@ -108,7 +108,7 @@ func UpdatePost(c *gin.Context) {
 	body.ID = uint(id)
 
 	var err error
-	if er := db.Orm.Debug().Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
+	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
 		err = er
 	}
 	if er := db.Orm.Model(&model.VideoMetas{}).Where("pid = ?", body.ID).Updates(body.Meta).Error; er != nil {
@@ -122,16 +122,28 @@ func UpdatePost(c *gin.Context) {
 
 func DeletePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	var err error
+	err = db.Orm.Delete(&model.Post{ID: uint(id)}).Error
+	if e := db.Orm.Where("pid = ?", id).Delete(&model.VideoMetas{}).Error; e != nil {
+		err = e
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Debug().Delete(&model.Post{ID: uint(id)}).Error,
+		"err": err,
 	})
 }
 
 func DeletePostsById(c *gin.Context) {
-	var body map[string]interface{}
+	var (
+		body map[string]interface{}
+		err  error
+	)
 	c.ShouldBindJSON(&body)
 	ids := (body["ids"]).([]int)
+	err = db.Orm.Delete(&model.Post{}, ids).Error
+	if e := db.Orm.Where("pid in (?)", ids).Delete(&model.VideoMetas{}).Error; e != nil {
+		err = e
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Delete(&model.Post{}, ids).Error,
+		"err": err,
 	})
 }

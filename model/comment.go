@@ -28,5 +28,5 @@ type Comments struct {
 	Content   string `gorm:"size:200"`
 	Color     string `gorm:"size:10"`
 	CreatedAt *time.Time
-	DeletedAt gorm.DeletedAt
+	DeletedAt gorm.DeletedAt `json:"-"`
 }

@@ -25,11 +25,13 @@ DROP TABLE IF EXISTS `video_metas`;
 CREATE TABLE `video_metas` (
   `id` int NOT NULL AUTO_INCREMENT,
   `pid` int NOT NULL,
-  `type` varchar(10) NOT NULL COMMENT '番剧｜电影｜新番｜剧场版｜转载｜原创',
+  `title_japanese` varchar(60) DEFAULT '',
+  `title_romanji` varchar(60) DEFAULT '',
+  `genre` varchar(10) NOT NULL COMMENT '番剧|TV|电影｜新番｜剧场版｜转载｜原创',
   `region` varchar(10) DEFAULT '美国｜日本｜中国',
   `is_end` TINYINT(1) DEFAULT 1 COMMENT '1=>未完结 | 2=>完结',
   `publish_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
-  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '每周几更新',
+  `updated_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '每周几更新',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
@@ -39,8 +41,11 @@ CREATE TABLE `videos` (
   `id` int NOT NULL AUTO_INCREMENT,
   `cover` varchar(200) DEFAULT '',
   `episode` int DEFAULT 1,
-  `title` varchar(80) DEFAULT '',
-  `content` varchar(200) NOT NULL,
+  `title` varchar(60) DEFAULT '',
+  `title_japanese` varchar(60) DEFAULT '',
+  `title_romanji` varchar(60) DEFAULT '',
+  `video_url` varchar(200) NOT NULL,
+  `synopsis` varchar(200) DEFAULT '',
   `pid` int NOT NULL,
   `uid` int NOT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -65,24 +70,6 @@ CREATE TABLE `users` (
   `deleted_at` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
-
-
-INSERT INTO
-  `users`
-VALUES
-  (
-    '1',
-    'root',
-    '我可是管理员!',
-    'https://q1.qlogo.cn/g?b=qq&nk=7619376472&s=640',
-    '99dbba184467cd7c2c7b5ace07a7102a',
-    '88888888',
-    '这个人很酷，没有签名',
-    1,
-    2,
-    now(),
-    now()
-  );
 
 
 DROP TABLE IF EXISTS `comments`;

@@ -121,7 +121,7 @@ func GetUsers(c *gin.Context) {
 	}
 
 	var users []model.User
-	tx := db.Orm.Debug().Scopes(model.Paginate(c))
+	tx := db.Orm.Scopes(model.Paginate(c))
 
 	if body.Level != nil {
 		tx.Where("level = ?", body.Level)
@@ -148,6 +148,6 @@ func UpdateUserByName(c *gin.Context) {
 		})
 		return
 	}
-	err := db.Orm.Debug().Model(body).Where("name = ?", c.Param("name")).Updates(body).Error
+	err := db.Orm.Model(body).Where("name = ?", c.Param("name")).Updates(body).Error
 	c.JSON(http.StatusOK, gin.H{"err": err})
 }

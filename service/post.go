@@ -11,7 +11,7 @@ import (
 
 func GetPostById(id int) (*model.Post, error) {
 	var post model.Post
-	if err := db.Orm.Debug().Model(&model.Post{}).
+	if err := db.Orm.Model(&model.Post{}).
 		Preload("Creator").
 		Preload("Meta").
 		Where("posts.id = ?", id).
@@ -25,7 +25,7 @@ func GetPostById(id int) (*model.Post, error) {
 
 func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	var posts []model.Post
-	tx := db.Orm.Debug().Model(&model.Post{}).Scopes(model.Paginate(c)).
+	tx := db.Orm.Model(&model.Post{}).Scopes(model.Paginate(c)).
 		Preload("Creator").
 		Preload("Meta").
 		Joins("left join video_metas on video_metas.pid = posts.id")

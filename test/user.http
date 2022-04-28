@@ -8,8 +8,8 @@ POST {{host}}/register HTTP/1.1
 Content-Type: {{contentType}}
 
 {
-    "name": "sample1",
-    "pwd": "Wed21O"
+    "name": "root",
+    "pwd": "12345678"
 }
 
 #######
@@ -18,8 +18,8 @@ POST {{host}}/login HTTP/1.1
 Content-Type: {{contentType}}
 
 {
-    "name": "sample1",
-    "pwd": "Wed21O"
+    "name": "root",
+    "pwd": "12345678"
 }
 
 #######

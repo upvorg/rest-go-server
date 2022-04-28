@@ -1,0 +1,15 @@
+@hostname = http://localhost
+@port = 8080
+@host = {{hostname}}:{{port}}/api
+@contentType = application/json; charset=utf-8
+@Authorization = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTE3MjY3MjAsImp0aSI6IjIiLCJuYW1lIjoicm9vdCIsInVpZCI6Mn0.HTMVaqUlSJwWF8SxUYf1cOBwWWtxrLaXkq2nQWGmRe0
+
+POST {{host}}/post/33/video HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: Bearer {{Authorization}}
+
+{
+    "title": "Test Post 1",
+    "content": "This is a test post 1",
+    "IsRecommend": 2,
+}

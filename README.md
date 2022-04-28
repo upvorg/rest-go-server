@@ -5,3 +5,7 @@
 ## Go Packages
 
 - go get -d github.com/pilu/fresh
+
+## Refs
+
+- https://rapidapi.com/search/anime

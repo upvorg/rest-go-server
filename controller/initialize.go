@@ -31,4 +31,8 @@ func Initialize(r *gin.Engine) {
 	api.GET("/post/:id/comments", GetCommentsByPostId)
 	api.POST("/post/:id/comment", middleware.ShouldBeLogin(), CreateComment)
 	api.DELETE("/comment/:id", middleware.ShouldBeLogin(), DeleteCommentById)
+
+	api.GET("/post/:id/videos", GetVideosByPostId)
+	api.POST("/post/:id/video", middleware.ShouldBeLogin(), CreateVideo)
+	api.DELETE("/video/:id", middleware.ShouldBeLogin(), DeleteVideoById)
 }

@@ -124,7 +124,7 @@ func CreateComment(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Debug().Create(body).Error,
+		"err": db.Orm.Create(body).Error,
 	})
 }
 

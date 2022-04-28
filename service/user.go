@@ -26,7 +26,7 @@ func Register(user *model.User) (*model.User, error) {
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
 
 	// create user
-	result := db.Orm.Debug().Create(&model.User{
+	result := db.Orm.Create(&model.User{
 		Name:     user.Name,
 		Nickname: user.Nickname,
 		Pwd:      user.Pwd,
@@ -56,7 +56,7 @@ func IsUserExistByName(name string) bool {
 
 func GetUserByName(name string) (*model.User, error) {
 	var user model.User
-	if err := db.Orm.Debug().Where("name = ?", name).Find(&user).Error; err != nil {
+	if err := db.Orm.Where("name = ?", name).Find(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
