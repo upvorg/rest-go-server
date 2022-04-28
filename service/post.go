@@ -7,9 +7,8 @@ import (
 	"upv.life/server/model"
 )
 
-//TODO: get like&collect&comment count
-
-func GetPostById(id int) (*model.Post, error) {
+//TODO: get like&collect&comment count & is_like & is_collect
+func GetPostById(id uint) (*model.Post, error) {
 	var post model.Post
 	if err := db.Orm.Model(&model.Post{}).
 		Preload("Creator").
@@ -28,16 +27,15 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	tx := db.Orm.Model(&model.Post{}).Scopes(model.Paginate(c)).
 		Preload("Creator").
 		Preload("Meta").
-		Joins("left join video_metas on video_metas.pid = posts.id")
-
-	tx.Where("posts.type = ?", m.PostType)
+		Joins("left join video_metas on video_metas.pid = posts.id").
+		Where("posts.type = ?", m.Type)
 
 	if m.KeyWord != "" {
 		tx.Where("posts.title LIKE ? OR posts.content LIKE ?", "%"+m.KeyWord+"%", "%"+m.KeyWord+"%")
 	}
 
-	if m.Type != "" {
-		tx.Where("video_metas.type = ?", m.Type)
+	if m.Genre != "" {
+		tx.Where("video_metas.genre = ?", m.Type)
 	}
 
 	if m.Region != "" {

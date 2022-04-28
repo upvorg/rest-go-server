@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"upv.life/server/common"
 	"upv.life/server/db"
@@ -15,7 +16,7 @@ import (
 
 func GetPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	post, err := service.GetPostById(id)
+	post, err := service.GetPostById(uint(id))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -107,6 +108,10 @@ func UpdatePost(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	body.ID = uint(id)
 
+	if ok := isYourPost(c, body); !ok {
+		return
+	}
+
 	var err error
 	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
 		err = er
@@ -122,6 +127,9 @@ func UpdatePost(c *gin.Context) {
 
 func DeletePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	if ok := isYourPost(c, &model.Post{ID: uint(id)}); !ok {
+		return
+	}
 	var err error
 	err = db.Orm.Delete(&model.Post{ID: uint(id)}).Error
 	if e := db.Orm.Where("pid = ?", id).Delete(&model.VideoMetas{}).Error; e != nil {
@@ -137,6 +145,7 @@ func DeletePostsById(c *gin.Context) {
 		body map[string]interface{}
 		err  error
 	)
+	//TODO: Is it your own post?
 	c.ShouldBindJSON(&body)
 	ids := (body["ids"]).([]int)
 	err = db.Orm.Delete(&model.Post{}, ids).Error
@@ -146,4 +155,31 @@ func DeletePostsById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"err": err,
 	})
+}
+
+func isYourPost(c *gin.Context, body *model.Post) bool {
+	post, _ := service.GetPostById(body.ID)
+	if post == nil {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"err": "Post not found.",
+		})
+		return false
+	}
+	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (post.Uid != ctxUser.UserId || body.Status != 0) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"err": "Forbidden.",
+		})
+		return false
+	}
+	return true
+}
+
+//TODO: `UpdatedAt` should not be updated.
+func UpdatePostPv(c *gin.Context) {
+	err := db.Orm.Model(&model.Post{}).Where("id = ?", c.Param("id")).Update("pv", gorm.Expr("pv + 1")).Error
+	c.JSON(http.StatusOK, gin.H{
+		"err": err,
+	})
+
 }

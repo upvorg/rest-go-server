@@ -10,17 +10,19 @@ func Initialize(r *gin.Engine) {
 	api.POST("/register", Register)
 	api.POST("/login", Login)
 
-	api.GET("/user/:name", GetUserByName)
-	api.PUT("/user/:name", middleware.ShouldBeLogin(), UpdateUserByName)
 	api.GET("/users", GetUsers)
+	api.GET("/user/:name", GetUserByName)
+	api.GET("/user", middleware.ShouldBeLogin(), GetUser)
+	api.PUT("/user/:name", middleware.ShouldBeLogin(), UpdateUserByName)
 
-	api.POST("/post", middleware.ShouldBeLogin(), CreatePost)
 	api.GET("/post/:id", GetPostById)
+	api.GET("/:tag/posts", GetPostByTag)
+	api.GET("/posts", GetPostsByMetaType)
+	api.GET("/post/:id/pv", UpdatePostPv)
+	api.GET("/posts/recommends", GetRecommendPosts)
+	api.POST("/post", middleware.ShouldBeLogin(), CreatePost)
 	api.PUT("/post/:id", middleware.ShouldBeLogin(), UpdatePost)
 	api.DELETE("/post/:id", middleware.ShouldBeLogin(), DeletePostById)
-	api.GET("/posts", GetPostsByMetaType)
-	api.GET("/:tag/posts", GetPostByTag)
-	api.GET("/posts/recommends", GetRecommendPosts)
 	api.DELETE("/posts", middleware.ShouldBeLogin(), DeletePostsById)
 
 	api.POST("/like/post/:id", middleware.ShouldBeLogin(), LikePostById)
@@ -35,4 +37,5 @@ func Initialize(r *gin.Engine) {
 	api.GET("/post/:id/videos", GetVideosByPostId)
 	api.POST("/post/:id/video", middleware.ShouldBeLogin(), CreateVideo)
 	api.DELETE("/video/:id", middleware.ShouldBeLogin(), DeleteVideoById)
+	api.PUT("/post/:id/video", middleware.ShouldBeLogin(), UpdateVideoById)
 }

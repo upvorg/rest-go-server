@@ -26,6 +26,8 @@ type Post struct {
 	LikesCount    int            `gorm:"-"`
 	CommentsCount int            `gorm:"-"`
 	CollectsCount int            `gorm:"-"`
+	IsLiked       bool           `gorm:"-"`
+	IsCollected   bool           `gorm:"-"`
 }
 
 type VideoMetas struct {
@@ -44,9 +46,9 @@ type VideoMetas struct {
 //api
 
 type Meta struct {
-	KeyWord  string `form:"keyword,omitempty"`
-	Type     string `form:"type,omitempty"`
-	Region   string `form:"region,omitempty"`
-	IsEnd    int    `form:"isend,omitempty"`
-	PostType string `form:"pt,omitempty"`
+	KeyWord string `form:"keyword,omitempty"`
+	Type    string `form:"type,omitempty,default=post"`
+	Region  string `form:"region,omitempty"`
+	IsEnd   int    `form:"isend,omitempty"`
+	Genre   string `form:"genre,omitempty"`
 }

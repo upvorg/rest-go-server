@@ -10,17 +10,10 @@ import (
 )
 
 func Register(user *model.User) (*model.User, error) {
-	// check if user exists
-	if IsUserExistByName(user.Name) {
-		return nil, errors.New("the user name already taken")
-	}
 
-	if !common.CheckUserName(user.Name) {
-		return nil, errors.New("the user name is invalid")
-	}
-
-	if !common.CheckPassword(user.Pwd) {
-		return nil, errors.New("the password is invalid")
+	valid, err := CheckUserAndPwd(user.Name, user.Pwd)
+	if !valid {
+		return nil, err
 	}
 
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
@@ -60,4 +53,29 @@ func GetUserByName(name string) (*model.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func CheckUserName(name string) (bool, error) {
+	if !common.CheckUserName(name) {
+		return false, errors.New("the user name is invalid")
+	}
+	if IsUserExistByName(name) {
+		return false, errors.New("the user name already taken")
+	}
+	return true, nil
+}
+
+func CheckUserAndPwd(name, pwd string) (bool, error) {
+	if !common.CheckUserName(name) {
+		return false, errors.New("the user name is invalid")
+	}
+
+	if !common.CheckPassword(pwd) {
+		return false, errors.New("the password is invalid")
+	}
+
+	if IsUserExistByName(name) {
+		return false, errors.New("the user name already taken")
+	}
+	return true, nil
 }

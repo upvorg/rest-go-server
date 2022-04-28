@@ -38,7 +38,7 @@ func CreateVideo(c *gin.Context) {
 		return
 	}
 	postID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
-	if p, _ := service.GetPostById(int(postID)); p == nil {
+	if p, _ := service.GetPostById(uint(postID)); p == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "post not found"})
 		return
 	}
@@ -60,4 +60,22 @@ func DeleteVideoById(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"data": err})
 	}
+}
+
+func UpdateVideoById(c *gin.Context) {
+	var (
+		videoID uint64
+		video   = &model.Videos{}
+	)
+	if err := c.BindJSON(&video); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	videoID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
+
+	if err := db.Orm.Model(&model.Videos{}).Where("id = ?", videoID).Updates(video).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": video})
 }

@@ -22,7 +22,8 @@ var JWT_TOKEN_SIGN string = config.JwtSalt
 type AuthClaims struct {
 	jwt.StandardClaims
 	Name   string `json:"name,omitempty"`
-	UserId uint64 `json:"uid,omitempty"`
+	UserId uint   `json:"uid,omitempty"`
+	Level  uint   `json:"level,omitempty"`
 }
 
 func Auth() gin.HandlerFunc {
@@ -61,12 +62,15 @@ func Auth() gin.HandlerFunc {
 	}
 }
 
-func GenerateJwtToken(userId uint64, name string) (string, error) {
+func GenerateJwtToken(userId uint, name string, level uint) (string, error) {
 	authClaims := AuthClaims{
 		Name:   name,
 		UserId: userId,
+		Level:  level,
 		StandardClaims: jwt.StandardClaims{
 			Id:        fmt.Sprintf("%d", userId),
+			Issuer:    "UPV",
+			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(time.Hour * 24 * 7).Unix(),
 		},
 	}
