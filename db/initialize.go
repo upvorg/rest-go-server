@@ -34,11 +34,12 @@ func Initialize() {
 	gorm.AutoMigrate(
 		&model.User{},
 		&model.Post{},
-		&model.VideoMetas{},
-		&model.Videos{},
-		&model.Comments{},
-		&model.Likes{},
-		&model.Collects{},
+		&model.VideoMeta{},
+		&model.Video{},
+		&model.Comment{},
+		&model.Like{},
+		&model.Collect{},
+		&model.Feedback{},
 	)
 
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量

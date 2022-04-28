@@ -1,0 +1,35 @@
+package controller
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"upv.life/server/common"
+	"upv.life/server/db"
+	"upv.life/server/model"
+)
+
+func CreateFeedback(c *gin.Context) {
+	feedback := &model.Feedback{}
+	if err := c.ShouldBindJSON(&feedback); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": common.Translate(err),
+		})
+		return
+	}
+
+	feedback.Ip = c.ClientIP()
+	err := db.Orm.Create(feedback).Error
+	c.JSON(http.StatusOK, gin.H{
+		"err": err,
+	})
+}
+
+func GetFeedbacks(c *gin.Context) {
+	feedbacks := []model.Feedback{}
+	err := db.Orm.Find(&feedbacks).Error
+	c.JSON(http.StatusOK, gin.H{
+		"err":       err,
+		"feedbacks": feedbacks,
+	})
+}

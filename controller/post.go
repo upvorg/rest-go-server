@@ -116,7 +116,7 @@ func UpdatePost(c *gin.Context) {
 	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
 		err = er
 	}
-	if er := db.Orm.Model(&model.VideoMetas{}).Where("pid = ?", body.ID).Updates(body.Meta).Error; er != nil {
+	if er := db.Orm.Model(&model.VideoMeta{}).Where("pid = ?", body.ID).Updates(body.Meta).Error; er != nil {
 		err = er
 	}
 
@@ -132,7 +132,7 @@ func DeletePostById(c *gin.Context) {
 	}
 	var err error
 	err = db.Orm.Delete(&model.Post{ID: uint(id)}).Error
-	if e := db.Orm.Where("pid = ?", id).Delete(&model.VideoMetas{}).Error; e != nil {
+	if e := db.Orm.Where("pid = ?", id).Delete(&model.VideoMeta{}).Error; e != nil {
 		err = e
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -149,7 +149,7 @@ func DeletePostsById(c *gin.Context) {
 	c.ShouldBindJSON(&body)
 	ids := (body["ids"]).([]int)
 	err = db.Orm.Delete(&model.Post{}, ids).Error
-	if e := db.Orm.Where("pid in (?)", ids).Delete(&model.VideoMetas{}).Error; e != nil {
+	if e := db.Orm.Where("pid in (?)", ids).Delete(&model.VideoMeta{}).Error; e != nil {
 		err = e
 	}
 	c.JSON(http.StatusOK, gin.H{

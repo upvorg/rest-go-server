@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type Videos struct {
+type Video struct {
 	ID            uint   `gorm:"primaryKey"`
 	Episode       int    `gorm:"default:1"`
 	Cover         string `gorm:"size:200"`

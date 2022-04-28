@@ -14,7 +14,7 @@ import (
 func GetVideosByPostId(c *gin.Context) {
 	var (
 		postID uint64
-		videos []*model.Videos
+		videos []*model.Video
 	)
 	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -31,7 +31,7 @@ func GetVideosByPostId(c *gin.Context) {
 func CreateVideo(c *gin.Context) {
 	var (
 		postID uint64
-		video  model.Videos
+		video  model.Video
 	)
 	if err := c.BindJSON(&video); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -54,7 +54,7 @@ func CreateVideo(c *gin.Context) {
 
 func DeleteVideoById(c *gin.Context) {
 	videoID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err := db.Orm.Where("id = ?", videoID).Delete(&model.Videos{}).Error; err != nil {
+	if err := db.Orm.Where("id = ?", videoID).Delete(&model.Video{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	} else {
@@ -65,7 +65,7 @@ func DeleteVideoById(c *gin.Context) {
 func UpdateVideoById(c *gin.Context) {
 	var (
 		videoID uint64
-		video   = &model.Videos{}
+		video   = &model.Video{}
 	)
 	if err := c.BindJSON(&video); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -73,7 +73,7 @@ func UpdateVideoById(c *gin.Context) {
 	}
 	videoID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
 
-	if err := db.Orm.Model(&model.Videos{}).Where("id = ?", videoID).Updates(video).Error; err != nil {
+	if err := db.Orm.Model(&model.Video{}).Where("id = ?", videoID).Updates(video).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -21,7 +21,7 @@ type Post struct {
 	CreatedAt     *time.Time
 	UpdatedAt     *time.Time
 	DeletedAt     gorm.DeletedAt `json:"-"`
-	Meta          *VideoMetas    `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
+	Meta          *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
 	Creator       *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
 	LikesCount    int            `gorm:"-"`
 	CommentsCount int            `gorm:"-"`
@@ -30,7 +30,7 @@ type Post struct {
 	IsCollected   bool           `gorm:"-"`
 }
 
-type VideoMetas struct {
+type VideoMeta struct {
 	ID            uint   `gorm:"primaryKey" json:"-"`
 	Pid           uint   `gorm:"not null" json:"-"`
 	TitleJapanese string `gorm:"size:60"`
@@ -41,6 +41,10 @@ type VideoMetas struct {
 	IsEnd         uint8  `gorm:"default:1" form:"is_end,default=1"`
 	PublishDate   *time.Time
 	UpdatedDate   *time.Time
+}
+
+func (vm *VideoMeta) TableName() string {
+	return "video_metas"
 }
 
 //api

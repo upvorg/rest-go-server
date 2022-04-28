@@ -6,21 +6,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type Likes struct {
-	ID        uint `gorm:"primaryKey"`
-	Uid       uint
-	Pid       uint
-	CreatedAt *time.Time
-}
-
-type Collects struct {
-	ID        uint `gorm:"primaryKey"`
-	Uid       uint
-	Pid       uint
-	CreatedAt *time.Time
-}
-
-type Comments struct {
+// TODO: add comment @reply #i
+type Comment struct {
 	ID        uint `gorm:"primaryKey"`
 	Uid       uint
 	Pid       uint
