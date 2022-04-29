@@ -35,6 +35,7 @@ func Initialize() {
 		&model.User{},
 		&model.Post{},
 		&model.VideoMeta{},
+		&model.PostRanking{},
 		&model.Video{},
 		&model.Comment{},
 		&model.Like{},

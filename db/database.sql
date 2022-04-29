@@ -11,13 +11,12 @@ CREATE TABLE `posts` (
   `uid` int DEFAULT NULL,
   `tag` varchar(100) DEFAULT '',
   `status` TINYINT(1) DEFAULT 4 COMMENT '1=>删除 | 2=>下架 | 3=>待审核| 4=>正常',
-  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp DEFAULT NULL,
   `type` varchar(8) DEFAULT 'post' COMMENT 'post | video',
   `is_pined` TINYINT(1) DEFAULT 1 COMMENT '1=> | 2=>置顶',
   `is_recommend` TINYINT(1) DEFAULT 1 COMMENT '1=> | 2=>推荐',
-  `pv` int DEFAULT 0 COMMENT '浏览量', -- TODO: Redis 周榜｜月榜｜总榜
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
@@ -32,9 +31,18 @@ CREATE TABLE `video_metas` (
   `is_end` TINYINT(1) DEFAULT 1 COMMENT '1=>未完结 | 2=>完结',
   `publish_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   `updated_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '每周几更新',
+  `deleted_at` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
+DROP TABLE IF EXISTS `post_rankings`;
+CREATE TABLE `post_rankings` (
+`id` int NOT NULL AUTO_INCREMENT,
+`pid` int NOT NULL,
+`hits` int DEFAULT 0,
+`hits_at` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '日｜月｜总',
+ PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 DROP TABLE IF EXISTS `videos`;
 CREATE TABLE `videos` (

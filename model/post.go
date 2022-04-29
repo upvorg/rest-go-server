@@ -15,19 +15,26 @@ type Post struct {
 	Tag           string `gorm:"size:100"`
 	Status        uint8  `gorm:"default:4"`
 	Type          string `gorm:"default:post" binding:"required"`
-	Pv            uint
-	IsPined       uint `gorm:"default:1"`
-	IsRecommend   uint `gorm:"default:1"`
+	IsPined       uint   `gorm:"default:1"`
+	IsRecommend   uint   `gorm:"default:1"`
 	CreatedAt     *time.Time
 	UpdatedAt     *time.Time
 	DeletedAt     gorm.DeletedAt `json:"-"`
 	Meta          *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
 	Creator       *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
-	LikesCount    int            `gorm:"-"`
-	CommentsCount int            `gorm:"-"`
-	CollectsCount int            `gorm:"-"`
-	IsLiked       bool           `gorm:"-"`
-	IsCollected   bool           `gorm:"-"`
+	Hits          uint           `gorm:"omitempty"`
+	LikesCount    uint           `gorm:"omitempty"`
+	CommentsCount uint           `gorm:"omitempty"`
+	CollectsCount uint           `gorm:"omitempty"`
+	IsLiked       bool           `gorm:"omitempty"`
+	IsCollected   bool           `gorm:"omitempty"`
+}
+
+type PostRanking struct {
+	ID     uint       `gorm:"primaryKey"`
+	Pid    uint       `gorm:"not null;"`
+	Hits   uint       `gorm:"not null;"`
+	HitsAt *time.Time `gorm:"not null;default:now()"`
 }
 
 type VideoMeta struct {
@@ -41,6 +48,7 @@ type VideoMeta struct {
 	IsEnd         uint8  `gorm:"default:1" form:"is_end,default=1"`
 	PublishDate   *time.Time
 	UpdatedDate   *time.Time
+	DeletedAt     gorm.DeletedAt `json:"-"`
 }
 
 func (vm *VideoMeta) TableName() string {

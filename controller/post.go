@@ -131,7 +131,7 @@ func DeletePostById(c *gin.Context) {
 		return
 	}
 	var err error
-	err = db.Orm.Delete(&model.Post{ID: uint(id)}).Error
+	err = db.Orm.Delete(&model.Post{}, id).Error
 	if e := db.Orm.Where("pid = ?", id).Delete(&model.VideoMeta{}).Error; e != nil {
 		err = e
 	}
@@ -140,15 +140,16 @@ func DeletePostById(c *gin.Context) {
 	})
 }
 
+//TODO: Delete VideoMeta when delete post
 func DeletePostsById(c *gin.Context) {
 	var (
 		body map[string]interface{}
 		err  error
 	)
-	//TODO: Is it your own post?
 	c.ShouldBindJSON(&body)
 	ids := (body["ids"]).([]int)
-	err = db.Orm.Delete(&model.Post{}, ids).Error
+	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	err = db.Orm.Where("uid = ?", ctxUser.UserId).Delete(&model.Post{}, ids).Error
 	if e := db.Orm.Where("pid in (?)", ids).Delete(&model.VideoMeta{}).Error; e != nil {
 		err = e
 	}
@@ -160,7 +161,7 @@ func DeletePostsById(c *gin.Context) {
 func isYourPost(c *gin.Context, body *model.Post) bool {
 	post, _ := service.GetPostById(body.ID)
 	if post == nil {
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"err": "Post not found.",
 		})
 		return false
@@ -175,11 +176,106 @@ func isYourPost(c *gin.Context, body *model.Post) bool {
 	return true
 }
 
-//TODO: `UpdatedAt` should not be updated.
 func UpdatePostPv(c *gin.Context) {
-	err := db.Orm.Model(&model.Post{}).Where("id = ?", c.Param("id")).Update("pv", gorm.Expr("pv + 1")).Error
+	pr := &model.PostRanking{}
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	post, _ := service.GetPostById(uint(id))
+	if post == nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"err": "Post not found.",
+		})
+		return
+	}
+	if err := db.Orm.Model(&model.PostRanking{}).
+		Where("pid = ?", c.Param("id")).
+		Where("to_days(hits_at) = to_days(now())").
+		First(&pr).Error; err == gorm.ErrRecordNotFound {
+		db.Orm.Model(&model.PostRanking{}).Create(&model.PostRanking{
+			Pid:  uint(id),
+			Hits: 1,
+		})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	err := db.Orm.Model(&model.PostRanking{}).
+		Where("pid = ?", c.Param("id")).
+		Where("to_days(hits_at) = to_days(now())").
+		Update("hits", gorm.Expr("hits + 1")).Error
+
 	c.JSON(http.StatusOK, gin.H{
 		"err": err,
 	})
 
+}
+
+// https://www.cnblogs.com/yiyunkeji/p/7217738.html
+func GetPostDayRanking(c *gin.Context) {
+	posts := []*model.Post{}
+	if err := db.Orm.Model(&model.Post{}).
+		Preload("Creator").
+		Preload("Meta").
+		Select("posts.*, SUM(post_rankings.hits) as Hits").
+		Joins("left join post_rankings on post_rankings.pid = posts.id and to_days(post_rankings.hits_at) = to_days(now())").
+		Limit(20).
+		Order("hits desc").
+		Group("posts.id").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": posts,
+	})
+}
+
+func GetPostMonthRanking(c *gin.Context) {
+	posts := []*model.Post{}
+	if err := db.Orm.Model(&model.Post{}).
+		Preload("Creator").
+		Preload("Meta").
+		Select("posts.*, SUM(post_rankings.hits) as Hits").
+		Joins("left join post_rankings on post_rankings.pid = posts.id and DATE_FORMAT(post_rankings.hits_at,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m')").
+		Limit(30).
+		Order("hits desc").
+		Group("posts.id").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": posts,
+	})
+}
+
+func GetPostRanking(c *gin.Context) {
+	posts := []*model.Post{}
+	if err := db.Orm.Model(&model.Post{}).
+		Preload("Creator").
+		Preload("Meta").
+		Select("posts.*, SUM(post_rankings.hits) as Hits").
+		Joins("left join post_rankings on post_rankings.pid = posts.id").
+		Limit(50).
+		Order("hits desc").
+		Group("posts.id").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": posts,
+	})
 }
