@@ -51,7 +51,7 @@ func (vm *VideoMeta) TableName() string {
 
 type Meta struct {
 	KeyWord string `form:"keyword,omitempty"`
-	Type    string `form:"type,omitempty,default=post"`
+	Type    string `form:"type,omitempty,default=video"`
 	Region  string `form:"region,omitempty"`
 	IsEnd   int    `form:"isend,omitempty"`
 	Genre   string `form:"genre,omitempty"`

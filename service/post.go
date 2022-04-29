@@ -35,7 +35,7 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	}
 
 	if m.Genre != "" {
-		tx.Where("video_metas.genre = ?", m.Type)
+		tx.Where("video_metas.genre = ?", m.Genre)
 	}
 
 	if m.Region != "" {

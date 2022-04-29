@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"upv.life/server/common"
 	"upv.life/server/db"
+	"upv.life/server/middleware"
 	"upv.life/server/model"
 )
 
@@ -16,6 +17,10 @@ func CreateFeedback(c *gin.Context) {
 			"msg": common.Translate(err),
 		})
 		return
+	}
+
+	if ctxUser, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
+		feedback.Name = ctxUser.(*middleware.AuthClaims).Name
 	}
 
 	feedback.Ip = c.ClientIP()
