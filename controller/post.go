@@ -70,13 +70,26 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	body.Uid = uint(userID.(*middleware.AuthClaims).UserId)
+	user := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	body.Uid = uint(user.UserId)
 	if body.Type == "post" && body.Content == "" {
-		c.AbortWithStatusJSON(http.StatusPaymentRequired, gin.H{
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"msg": "Content is required.",
 		})
 		return
+	}
+
+	if common.IsUser(user.Level) && body.Type == "video" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"msg": "You can't create video post.",
+		})
+		return
+	}
+
+	if !common.IsRoot(user.Level) {
+		body.Status = 0
+		body.IsPined = 0
+		body.IsRecommend = 0
 	}
 
 	var err error
@@ -112,6 +125,13 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
+	user := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	if !common.IsRoot(user.Level) {
+		body.Status = 0
+		body.IsPined = 0
+		body.IsRecommend = 0
+	}
+
 	var err error
 	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
 		err = er
@@ -140,7 +160,6 @@ func DeletePostById(c *gin.Context) {
 	})
 }
 
-//TODO: Delete VideoMeta when delete post
 func DeletePostsById(c *gin.Context) {
 	var (
 		body map[string]interface{}
@@ -150,7 +169,10 @@ func DeletePostsById(c *gin.Context) {
 	ids := (body["ids"]).([]int)
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
 	err = db.Orm.Where("uid = ?", ctxUser.UserId).Delete(&model.Post{}, ids).Error
-	if e := db.Orm.Where("pid in (?)", ids).Delete(&model.VideoMeta{}).Error; e != nil {
+	if e := db.Orm.Where("pid in (?)", ids).
+		Where("posts.deleted_at IS NOT NULL").
+		Joins("left join posts on posts.id IN (?)", ids).
+		Delete(&model.VideoMeta{}).Error; e != nil {
 		err = e
 	}
 	c.JSON(http.StatusOK, gin.H{

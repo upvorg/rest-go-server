@@ -72,7 +72,7 @@ CREATE TABLE `users` (
   `mail` varchar(50) DEFAULT NULL UNIQUE,
   `bio` varchar(100) DEFAULT '这个人很酷，什么都没有留下',
   `level` TINYINT(1) NOT NULL DEFAULT 4 COMMENT '1=>超级管理员 | 2=>管理员 | 3=>创作者 | 4=>普通用户',
-  `status` TINYINT(1) DEFAULT 1 COMMENT '1=>删除 | 2=>正常',
+  `status` TINYINT(1) DEFAULT 1 COMMENT '1=>正常 | 2=>封禁',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp DEFAULT NULL,
