@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"upv.life/server/common"
 	"upv.life/server/config"
 	"upv.life/server/db"
@@ -33,13 +34,13 @@ func Register(c *gin.Context) {
 	}
 	if user, error := service.Register(user); error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": error.Error(),
+			"err": error.Error(),
 		})
 	} else {
 		token, err := middleware.GenerateJwtToken(user.ID, user.Name, user.Level)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": err.Error(),
+				"err": err.Error(),
 			})
 			return
 		}
@@ -62,25 +63,24 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var user model.User
-	db.Orm.Where(&model.User{Name: body.Name}).Find(&user)
-
-	if user.ID == 0 {
+	user, err := service.GetUserByName(body.Name)
+	if err == gorm.ErrRecordNotFound {
 		Register(c)
 		return
 	}
 
 	if !common.ComparePasswords(user.Pwd, []byte(body.Pwd)) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": "Invalid password.",
+			"err": "Invalid password.",
 		})
 		return
 	}
+
 	user.Pwd = ""
 	token, err := middleware.GenerateJwtToken(user.ID, user.Name, user.Level)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": err.Error(),
+			"err": err.Error(),
 		})
 		return
 	}
@@ -112,9 +112,8 @@ func GetUser(c *gin.Context) {
 
 func GetUserByName(c *gin.Context) {
 	name := c.Param("name")
-	var user model.User
-	db.Orm.Where("name = ?", name).Find(&user)
-	if user.ID == 0 {
+	user, err := service.GetUserByName(name)
+	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusNotFound, gin.H{
 			"err": "User not found.",
 		})

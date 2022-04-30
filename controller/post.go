@@ -180,24 +180,6 @@ func DeletePostsById(c *gin.Context) {
 	})
 }
 
-func isYourPost(c *gin.Context, body *model.Post) bool {
-	post, _ := service.GetPostById(body.ID)
-	if post == nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"err": "Post not found.",
-		})
-		return false
-	}
-	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
-	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (post.Uid != ctxUser.UserId || body.Status != 0) {
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"err": "Forbidden.",
-		})
-		return false
-	}
-	return true
-}
-
 func UpdatePostPv(c *gin.Context) {
 	pr := &model.PostRanking{}
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -300,4 +282,20 @@ func GetPostRanking(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": posts,
 	})
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+func isYourPost(c *gin.Context, body *model.Post) bool {
+	post, err := service.GetPostById(body.ID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"err": err})
+		return false
+	}
+	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (post.Uid != ctxUser.UserId || body.Status != 0) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"err": "Forbidden."})
+		return false
+	}
+	return true
 }

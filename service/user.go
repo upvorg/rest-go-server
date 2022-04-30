@@ -1,9 +1,9 @@
 package service
 
 import (
-	"database/sql"
 	"errors"
 
+	"gorm.io/gorm"
 	"upv.life/server/common"
 	"upv.life/server/db"
 	"upv.life/server/model"
@@ -17,8 +17,6 @@ func Register(user *model.User) (*model.User, error) {
 	}
 
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
-
-	// create user
 	result := db.Orm.Create(&model.User{
 		Name:     user.Name,
 		Nickname: user.Nickname,
@@ -40,16 +38,16 @@ func Register(user *model.User) (*model.User, error) {
 }
 
 func IsUserExistByName(name string) bool {
-	if user, err := GetUserByName(name); err != nil && err != sql.ErrNoRows {
+	if _, err := GetUserByName(name); err != nil || err == gorm.ErrRecordNotFound {
 		return false
 	} else {
-		return user.ID != 0
+		return true
 	}
 }
 
 func GetUserByName(name string) (*model.User, error) {
 	var user model.User
-	if err := db.Orm.Where("name = ?", name).Find(&user).Error; err != nil {
+	if err := db.Orm.Where("name = ?", name).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

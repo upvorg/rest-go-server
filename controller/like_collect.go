@@ -5,23 +5,18 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
 )
 
 func hasLikedPost(pid uint, uid uint) bool {
-	var count int64
-	db.Orm.Model(&model.Like{}).Where("uid = ? and pid = ?", uid, pid).Find(&model.Like{}).Count(&count)
-
-	return count > 0
+	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Like{}).Error == gorm.ErrRecordNotFound
 }
 
 func hasCollectedPost(pid uint, uid uint) bool {
-	var count int64
-	db.Orm.Model(&model.Collection{}).Where("uid = ? and pid = ?", uid, pid).Find(&model.Collection{}).Count(&count)
-
-	return count > 0
+	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Collection{}).Error == gorm.ErrRecordNotFound
 }
 
 func LikePostById(c *gin.Context) {

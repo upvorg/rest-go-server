@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"upv.life/server/common"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
@@ -42,9 +43,8 @@ func CreateVideo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "post not found"})
 		return
 	}
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
 	video.Pid = uint(postID)
-	video.Uid = uint(userID.(*middleware.AuthClaims).UserId)
+	video.Uid = uint(c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId)
 	if err := db.Orm.Create(&video).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -54,6 +54,10 @@ func CreateVideo(c *gin.Context) {
 
 func DeleteVideoById(c *gin.Context) {
 	videoID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	if !isYourVideo(c, uint(videoID)) {
+		return
+	}
+
 	if err := db.Orm.Where("id = ?", videoID).Delete(&model.Video{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -72,10 +76,29 @@ func UpdateVideoById(c *gin.Context) {
 		return
 	}
 	videoID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
+	if !isYourVideo(c, uint(videoID)) {
+		return
+	}
 
 	if err := db.Orm.Model(&model.Video{}).Where("id = ?", videoID).Updates(video).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": video})
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+func isYourVideo(c *gin.Context, vid uint) bool {
+	var video model.Video
+	if err := db.Orm.Model(&model.Video{}).Where("id = ?", vid).First(&video).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return false
+	}
+	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (video.Uid != ctxUser.UserId) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"err": "Forbidden."})
+		return false
+	}
+	return true
 }

@@ -34,9 +34,7 @@ func CreateComment(c *gin.Context) {
 		})
 		return
 	}
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(*middleware.AuthClaims).UserId)
-	body.Uid = uid
+	body.Uid = uint(c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId)
 	pid, _ := strconv.Atoi(c.Param("id"))
 	body.Pid = uint(pid)
 	if body.Content == "" {
@@ -53,6 +51,16 @@ func CreateComment(c *gin.Context) {
 
 func DeleteCommentById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	comment := &model.Comment{}
+	if err := db.Orm.Where("id = ?", id).First(comment).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+		return
+	}
+	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (comment.Uid != ctxUser.UserId) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"err": "Forbidden."})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"err": db.Orm.Delete(&model.Comment{}, id).Error,
