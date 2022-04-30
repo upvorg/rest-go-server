@@ -19,7 +19,7 @@ func hasLikedPost(pid uint, uid uint) bool {
 
 func hasCollectedPost(pid uint, uid uint) bool {
 	var count int64
-	db.Orm.Model(&model.Collect{}).Where("uid = ? and pid = ?", uid, pid).Find(&model.Collect{}).Count(&count)
+	db.Orm.Model(&model.Collection{}).Where("uid = ? and pid = ?", uid, pid).Find(&model.Collection{}).Count(&count)
 
 	return count > 0
 }
@@ -71,7 +71,7 @@ func CollectPostById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Model(&model.Collect{}).Create(&model.Collect{
+		"err": db.Orm.Model(&model.Collection{}).Create(&model.Collection{
 			Uid: uid,
 			Pid: uint(id),
 		}).Error,
@@ -89,6 +89,6 @@ func UncollectPostById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Model(&model.Collect{}).Where("uid = ? and pid = ?", uid, id).Delete(model.Collect{}).Error,
+		"err": db.Orm.Model(&model.Collection{}).Where("uid = ? and pid = ?", uid, id).Delete(model.Collection{}).Error,
 	})
 }

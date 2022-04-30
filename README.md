@@ -18,6 +18,10 @@ env ENV=release /app &
 
 - go get -d github.com/pilu/fresh
 
+## Roadmap
+
+- Collectmark
+
 ## Refs
 
 - https://rapidapi.com/search/anime

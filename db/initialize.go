@@ -39,7 +39,7 @@ func Initialize() {
 		&model.Video{},
 		&model.Comment{},
 		&model.Like{},
-		&model.Collect{},
+		&model.Collection{},
 		&model.Feedback{},
 	)
 

@@ -9,7 +9,7 @@ type Like struct {
 	CreatedAt *time.Time
 }
 
-type Collect struct {
+type Collection struct {
 	ID        uint `gorm:"primaryKey"`
 	Uid       uint
 	Pid       uint

@@ -96,8 +96,8 @@ CREATE TABLE `comments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 
-DROP TABLE IF EXISTS `collects`;
-CREATE TABLE `collects` (
+DROP TABLE IF EXISTS `collections`;
+CREATE TABLE `collections` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uid` int NOT NULL,
   `pid` int NOT NULL,
