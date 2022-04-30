@@ -69,7 +69,7 @@ CREATE TABLE `users` (
   `nickname` varchar(16) DEFAULT '',
   `avatar` varchar(100) DEFAULT 'https://q1.qlogo.cn/g?b=qq&nk=7619376472&s=640',
   `pwd` varchar(100) NOT NULL,
-  `mail` varchar(50) DEFAULT NULL UNIQUE,
+  `email` varchar(50) DEFAULT NULL UNIQUE,
   `bio` varchar(100) DEFAULT '这个人很酷，什么都没有留下',
   `level` TINYINT(1) NOT NULL DEFAULT 4 COMMENT '1=>超级管理员 | 2=>管理员 | 3=>创作者 | 4=>普通用户',
   `status` TINYINT(1) DEFAULT 1 COMMENT '1=>正常 | 2=>封禁',
@@ -83,12 +83,13 @@ CREATE TABLE `users` (
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `target_id` int DEFAULT 1,
-  `content` varchar(200) NOT NULL,
+  `parent_id` int DEFAULT NULL,
+  `target_id` int DEFAULT NULL,
   `pid` int NOT NULL,
-  `vid` int DEFAULT 1,
-  `color` varchar(10) DEFAULT '',
   `uid` int NOT NULL,
+  `vid` int DEFAULT 1,
+  `content` varchar(200) NOT NULL,
+  `color` varchar(10) DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
