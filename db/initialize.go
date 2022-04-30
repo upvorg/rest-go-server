@@ -15,12 +15,16 @@ import (
 var Orm *gorm.DB
 
 func Initialize() {
+	logLevel := logger.Silent
+	if config.AppMode == "debug" {
+		logLevel = logger.Info
+	}
 	gorm, err := gorm.Open(mysql.Open(config.MysqlDsn),
 		&gorm.Config{Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags),
 			logger.Config{
 				SlowThreshold:             time.Second,
-				LogLevel:                  logger.Info,
+				LogLevel:                  logLevel,
 				IgnoreRecordNotFoundError: false,
 				Colorful:                  false,
 			},

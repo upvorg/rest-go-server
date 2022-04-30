@@ -14,6 +14,9 @@ func Initialize(r *gin.Engine) {
 	api.GET("/user/:name", GetUserByName)
 	api.GET("/user", middleware.ShouldBeLogin(), GetUser)
 	api.PUT("/user/:name", middleware.ShouldBeLogin(), UpdateUserByName)
+	// :name is id!!
+	api.GET("/user/:name/likes", middleware.ShouldBeLogin(), GetLikesByUserId)
+	api.GET("/user/:name/collections", middleware.ShouldBeLogin(), GetCollectionsByUserId)
 
 	api.GET("/post/:id", GetPostById)
 	api.GET("/:tag/posts", GetPostByTag)

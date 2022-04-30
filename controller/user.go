@@ -93,6 +93,7 @@ func Login(c *gin.Context) {
 	})
 }
 
+//TODO: postcount pv likecount collectcount commentcount
 func GetUser(c *gin.Context) {
 	ctxUser, _ := c.Get(middleware.CTX_AUTH_KEY)
 	uid := uint(ctxUser.(*middleware.AuthClaims).UserId)

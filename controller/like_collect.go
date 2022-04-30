@@ -87,3 +87,63 @@ func UncollectPostById(c *gin.Context) {
 		"err": db.Orm.Model(&model.Collection{}).Where("uid = ? and pid = ?", uid, id).Delete(model.Collection{}).Error,
 	})
 }
+
+func GetLikesByUserId(c *gin.Context) {
+	var posts []model.Post
+	uid := c.Param("name")
+	postType := c.Query("type")
+	tx := db.Orm.Model(&model.Like{}).
+		Select("posts.*").
+		Preload("Creator").
+		Preload("Meta").
+		Where("likes.uid = ?", uid)
+
+	if postType != "" {
+		tx.Joins("left join posts on posts.id = likes.pid AND posts.type = ?", postType)
+	} else {
+		tx.Joins("left join posts on posts.id = likes.pid")
+	}
+
+	if err := tx.
+		Joins("left join users on users.id = posts.uid").
+		Joins("left join video_metas on video_metas.id = posts.id").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": posts,
+	})
+}
+
+func GetCollectionsByUserId(c *gin.Context) {
+	var posts []model.Post
+	uid := c.Param("name")
+	postType := c.Query("type")
+	tx := db.Orm.Model(&model.Collection{}).
+		Select("posts.*").
+		Preload("Creator").
+		Preload("Meta").
+		Where("collections.uid = ?", uid)
+
+	if postType != "" {
+		tx.Joins("left join posts on posts.id = collections.pid AND posts.type = ?", postType)
+	} else {
+		tx.Joins("left join posts on posts.id = collections.pid")
+	}
+
+	if err := tx.
+		Joins("left join users on users.id = posts.uid").
+		Joins("left join video_metas on video_metas.id = posts.id").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": posts,
+	})
+}

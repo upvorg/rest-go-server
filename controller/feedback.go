@@ -21,6 +21,8 @@ func CreateFeedback(c *gin.Context) {
 
 	if ctxUser, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
 		feedback.Name = ctxUser.(*middleware.AuthClaims).Name
+	} else {
+		feedback.Name = ""
 	}
 
 	feedback.Ip = c.ClientIP()
