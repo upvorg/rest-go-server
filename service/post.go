@@ -2,28 +2,49 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"upv.life/server/db"
+	"upv.life/server/middleware"
 	"upv.life/server/model"
 )
 
-//TODO: get is_like & is_collect where likes.uid = uid
-func GetPostById(id uint) (*model.Post, error) {
+// tips: left join 1:n  repeat data
+func GetSimplePostByID(id uint) (*model.Post, error) {
 	var post model.Post
+	if err := db.Orm.Model(&model.Post{}).
+		Where("posts.id = ?", id).
+		First(&post).Error; err == gorm.ErrRecordNotFound {
+		return nil, errors.New("post not found")
+	} else if err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
+
+func GetPostById(id uint, uid uint) (*model.Post, error) {
+	var post model.Post
+	withUserQuery := ""
+	if uid != 0 {
+		withUserQuery = fmt.Sprintf(`
+		,IF((SELECT id FROM likes WHERE likes.pid = posts.id AND likes.uid = %d),2,1) as IsLiked,
+		IF((SELECT id FROM collections WHERE collections.pid = posts.id AND collections.uid = %d),2,1) as IsCollected
+		`, uid, uid)
+	} else {
+		withUserQuery = `,1 as IsLiked,1 as IsCollected`
+	}
 	if err := db.Orm.Model(&model.Post{}).
 		Preload("Creator").
 		Preload("Meta").
 		Select(`
 		posts.*,
-		COUNT(likes.id) as LikesCount,
-		COUNT(collects.id) as CollectsCount,
-		COUNT(comments.id) as CommentsCount
-		`).
-		Joins("left join likes on likes.pid = posts.id").
-		Joins("left join collects on collects.pid = posts.id").
-		Joins("left join comments on comments.pid = posts.id").
+		(SELECT COUNT(id) FROM likes WHERE likes.pid = posts.id) as LikesCount,
+		(SELECT COUNT(id) FROM collections WHERE collections.pid = posts.id) as CollectionCount,
+		(SELECT COUNT(id) FROM comments WHERE comments.pid = posts.id) as CommentCount,
+		(SELECT SUM(hits) FROM post_rankings WHERE pid = posts.id) as Hits
+		`+withUserQuery).
 		Where("posts.id = ?", id).
 		Group("posts.id").
 		First(&post).Error; err == gorm.ErrRecordNotFound {
@@ -36,22 +57,34 @@ func GetPostById(id uint) (*model.Post, error) {
 
 func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	var posts []model.Post
+	withUserQuery := ""
+	if user, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
+		withUserQuery = fmt.Sprintf(`
+		,IF((SELECT id FROM likes WHERE likes.pid = posts.id AND likes.uid = %d),2,1) as IsLiked,
+		IF((SELECT id FROM collections WHERE collections.pid = posts.id AND collections.uid = %d),2,1) as IsCollected
+		`, user.(*middleware.AuthClaims).UserId, user.(*middleware.AuthClaims).UserId)
+	} else {
+		withUserQuery = `,1 as IsLiked,1 as IsCollected`
+	}
+
 	tx := db.Orm.Model(&model.Post{}).Scopes(model.Paginate(c)).
 		Preload("Creator").
 		Preload("Meta").
 		Select(`
 		posts.*,
-		COUNT(likes.id) as LikesCount,
-		COUNT(collects.id) as CollectsCount,
-		COUNT(comments.id) as CommentsCount
-		`).
-		Joins("left join likes on likes.pid = posts.id").
-		Joins("left join collects on collects.pid = posts.id").
-		Joins("left join comments on comments.pid = posts.id").
+		(SELECT COUNT(id) FROM likes WHERE likes.pid = posts.id) as LikesCount,
+		(SELECT COUNT(id) FROM collections WHERE collections.pid = posts.id) as CollectionCount,
+		(SELECT COUNT(id) FROM comments WHERE comments.pid = posts.id) as CommentCount,
+		(SELECT SUM(hits) FROM post_rankings WHERE pid = posts.id) as Hits
+		`+withUserQuery).
 		Joins("left join video_metas on video_metas.pid = posts.id").
 		Where("posts.type = ?", m.Type).
 		Order("posts.created_at desc").
 		Group("posts.id")
+
+	if m.Tag != "" {
+		tx.Where("posts.tags LIKE ?", "%"+m.Tag+"%")
+	}
 
 	if m.KeyWord != "" {
 		tx.Where("posts.title LIKE ? OR posts.content LIKE ?", "%"+m.KeyWord+"%", "%"+m.KeyWord+"%")
@@ -80,7 +113,9 @@ func GetPostsByTag(tag string, c *gin.Context) (*[]model.Post, error) {
 	var posts []model.Post
 
 	if err := db.Orm.Scopes(model.Paginate(c)).
-		Where("tag LIKE ?", "%"+tag+"%").
+		Preload("Creator").
+		Preload("Meta").
+		Where("tags LIKE ?", "%"+tag+"%").
 		Order("posts.created_at desc").
 		Find(&posts).Error; err != nil {
 		return nil, err

@@ -19,9 +19,9 @@ func Initialize(r *gin.Engine) {
 	api.GET("/user/:name/collections", middleware.ShouldBeLogin(), GetCollectionsByUserId)
 
 	api.GET("/post/:id", GetPostById)
-	api.GET("/:tag/posts", GetPostByTag)
 	api.GET("/posts", GetPostsByMetaType)
 	api.GET("/post/:id/pv", UpdatePostPv)
+	api.GET("/tag/:tag/posts", GetPostByTag)
 	api.GET("/post/ranking", GetPostRanking)
 	api.GET("/post/day/ranking", GetPostDayRanking)
 	api.GET("/post/month/ranking", GetPostMonthRanking)

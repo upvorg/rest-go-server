@@ -7,27 +7,27 @@ import (
 )
 
 type Post struct {
-	ID            uint   `gorm:"primaryKey"`
-	Cover         string `gorm:"size:200"`
-	Title         string `gorm:"size:60;not null" binding:"required"`
-	Content       string `gorm:"type:text"`
-	Uid           uint   `json:"-"`
-	Tag           string `gorm:"size:100"`
-	Status        uint8  `gorm:"default:4"`
-	Type          string `gorm:"default:post" binding:"required"`
-	IsPined       uint   `gorm:"default:1"`
-	IsRecommend   uint   `gorm:"default:1"`
-	CreatedAt     *time.Time
-	UpdatedAt     *time.Time
-	DeletedAt     gorm.DeletedAt `json:"-"`
-	Meta          *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
-	Creator       *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
-	Hits          uint           `gorm:"omitempty"`
-	LikesCount    uint           `gorm:"omitempty"`
-	CommentsCount uint           `gorm:"omitempty"`
-	CollectsCount uint           `gorm:"omitempty"`
-	IsLiked       bool           `gorm:"omitempty"`
-	IsCollected   bool           `gorm:"omitempty"`
+	ID              uint   `gorm:"primaryKey"`
+	Cover           string `gorm:"size:200"`
+	Title           string `gorm:"size:60;not null" binding:"required"`
+	Content         string `gorm:"type:text"`
+	Uid             uint   `json:"-"`
+	Tags            string `gorm:"size:100"`
+	Status          uint8  `gorm:"default:4"`
+	Type            string `gorm:"default:post" binding:"required"`
+	IsPined         uint   `gorm:"default:1"`
+	IsRecommend     uint   `gorm:"default:1"`
+	CreatedAt       *time.Time
+	UpdatedAt       *time.Time
+	DeletedAt       gorm.DeletedAt `json:"-"`
+	Meta            *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
+	Creator         *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
+	Hits            uint           `gorm:"omitempty"`
+	LikesCount      uint           `gorm:"omitempty"`
+	CommentCount    uint           `gorm:"omitempty"`
+	CollectionCount uint           `gorm:"omitempty"`
+	IsLiked         uint           `gorm:"omitempty;default:1"`
+	IsCollected     uint           `gorm:"omitempty"`
 }
 
 type PostRanking struct {
@@ -63,4 +63,5 @@ type Meta struct {
 	Region  string `form:"region,omitempty"`
 	IsEnd   int    `form:"isend,omitempty"`
 	Genre   string `form:"genre,omitempty"`
+	Tag     string `form:"tag,omitempty"`
 }

@@ -16,7 +16,13 @@ import (
 
 func GetPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	post, err := service.GetPostById(uint(id))
+	var post *model.Post
+	var err error
+	if user, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
+		post, err = service.GetPostById(uint(id), user.(*middleware.AuthClaims).UserId)
+	} else {
+		post, err = service.GetPostById(uint(id), 0)
+	}
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -183,7 +189,7 @@ func DeletePostsById(c *gin.Context) {
 func UpdatePostPv(c *gin.Context) {
 	pr := &model.PostRanking{}
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	post, _ := service.GetPostById(uint(id))
+	post, _ := service.GetSimplePostByID(uint(id))
 	if post == nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"err": "Post not found.",
@@ -287,7 +293,7 @@ func GetPostRanking(c *gin.Context) {
 ////////////////////////////////////////////////////////////////////////////////
 
 func isYourPost(c *gin.Context, body *model.Post) bool {
-	post, err := service.GetPostById(body.ID)
+	post, err := service.GetSimplePostByID(body.ID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"err": err})
 		return false

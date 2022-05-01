@@ -39,7 +39,7 @@ func CreateVideo(c *gin.Context) {
 		return
 	}
 	postID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
-	if p, _ := service.GetPostById(uint(postID)); p == nil {
+	if p, _ := service.GetSimplePostByID(uint(postID)); p == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "post not found"})
 		return
 	}
