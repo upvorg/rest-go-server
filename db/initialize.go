@@ -35,17 +35,20 @@ func Initialize() {
 
 	Orm = gorm
 	sqlDB, _ := gorm.DB()
-	gorm.AutoMigrate(
-		&model.User{},
-		&model.Post{},
-		&model.VideoMeta{},
-		&model.PostRanking{},
-		&model.Video{},
-		&model.Comment{},
-		&model.Like{},
-		&model.Collection{},
-		&model.Feedback{},
-	)
+
+	if config.AppMode == "-debug" {
+		gorm.AutoMigrate(
+			&model.User{},
+			&model.Post{},
+			&model.VideoMeta{},
+			&model.PostRanking{},
+			&model.Video{},
+			&model.Comment{},
+			&model.Like{},
+			&model.Collection{},
+			&model.Feedback{},
+		)
+	}
 
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
 	sqlDB.SetMaxIdleConns(10)

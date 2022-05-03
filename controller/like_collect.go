@@ -21,8 +21,7 @@ func hasCollectedPost(pid uint, uid uint) bool {
 
 func LikePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(*middleware.AuthClaims).UserId)
+	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
 	if hasLikedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -42,8 +41,7 @@ func LikePostById(c *gin.Context) {
 
 func UnlikePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(*middleware.AuthClaims).UserId)
+	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 	if !hasLikedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "repeatedly",
@@ -57,8 +55,8 @@ func UnlikePostById(c *gin.Context) {
 
 func CollectPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(*middleware.AuthClaims).UserId)
+	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
+
 	if hasCollectedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": "You have collected this post.",
@@ -75,8 +73,8 @@ func CollectPostById(c *gin.Context) {
 
 func UncollectPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	userID, _ := c.Get(middleware.CTX_AUTH_KEY)
-	uid := uint(userID.(*middleware.AuthClaims).UserId)
+	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
+
 	if !hasCollectedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"msg": "You have collected this post.",

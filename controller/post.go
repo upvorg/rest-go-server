@@ -98,6 +98,9 @@ func CreatePost(c *gin.Context) {
 		body.IsRecommend = 0
 	}
 
+	tags, _ := getDBTags()
+	body.Tags = common.FixTags(tags, body.Tags)
+
 	var err error
 	if body.Type == "video" {
 		err = db.Orm.Create(body).Error
@@ -137,6 +140,9 @@ func UpdatePost(c *gin.Context) {
 		body.IsPined = 0
 		body.IsRecommend = 0
 	}
+
+	tags, _ := getDBTags()
+	body.Tags = common.FixTags(tags, body.Tags)
 
 	var err error
 	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {

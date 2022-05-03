@@ -9,9 +9,10 @@ type Video struct {
 	Title         string `gorm:"size:60;"`
 	TitleJapanese string `gorm:"size:60"`
 	TitleRomanji  string `gorm:"size:60"`
-	Content       string `gorm:"size:200"`
+	VideoUrl      string `gorm:"size:200"`
+	Synopsis      string `gorm:"size:200"`
 	Uid           uint
 	Pid           uint
-	CreatedAt     *time.Time
-	UpdatedAt     *time.Time
+	CreatedAt     *time.Time `gorm:"type:timestamp"`
+	UpdatedAt     *time.Time `gorm:"type:timestamp"`
 }

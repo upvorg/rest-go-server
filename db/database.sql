@@ -9,7 +9,7 @@ CREATE TABLE `posts` (
   `title` varchar(60) NOT NULL,
   `content` text DEFAULT NULL,
   `uid` int DEFAULT NULL,
-  `tags` varchar(100) DEFAULT '' COMMENT '标签:最多四个',
+  `tags` varchar(40) DEFAULT '' COMMENT '标签:最多四个 搞笑运动励志热血战斗竞技校园青春爱情恋爱冒险后宫百合治愈萝莉魔法悬疑推理奇幻科幻游戏神魔恐怖血腥机战战争犯罪历史社会职场剧情伪娘耽美童年教育亲子真人歌舞肉番美少女轻小说吸血鬼女性向泡面番欢乐向',
   `status` TINYINT(1) DEFAULT 4 COMMENT '1=>删除 | 2=>下架 | 3=>待审核| 4=>正常',
   `type` varchar(8) DEFAULT 'post' COMMENT 'post | video',
   `is_pined` TINYINT(1) DEFAULT 1 COMMENT '1=> | 2=>置顶',
@@ -26,9 +26,10 @@ CREATE TABLE `video_metas` (
   `pid` int NOT NULL,
   `title_japanese` varchar(60) DEFAULT '',
   `title_romanji` varchar(60) DEFAULT '',
-  `genre` varchar(10) NOT NULL COMMENT '番剧|新番|剧场版|电影|转载|原创  剧场版=>单集',
+  `genre` varchar(10) NOT NULL COMMENT '番剧|动画电影|电影|电视剧|原创',
   `region` varchar(10) DEFAULT '美国｜日本｜中国',
   `is_end` TINYINT(1) DEFAULT 1 COMMENT '1=>未完结 | 2=>完结',
+  `episodes` int DEFAULT 0 COMMENT "共几集",
   `publish_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
   `updated_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '每周几更新',
   `deleted_at` timestamp DEFAULT NULL,
@@ -58,6 +59,17 @@ CREATE TABLE `videos` (
   `uid` int NOT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+
+DROP TABLE IF EXISTS `tags`;
+CREATE TABLE `tags` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `uid` int NOT NULL,
+  `name` varchar(20) NOT NULL UNIQUE,
+  `synopsis` varchar(200) DEFAULT '',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 

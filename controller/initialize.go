@@ -45,6 +45,9 @@ func Initialize(r *gin.Engine) {
 	api.DELETE("/video/:id", middleware.ShouldBeLogin(), DeleteVideoById)
 	api.PUT("/post/:id/video", middleware.ShouldBeLogin(), UpdateVideoById)
 
+	api.GET("/tags", GetTags)
+	api.POST("/tag", middleware.ShouldBeLogin(), CreateTag)
+
 	api.GET("/feedbacks", GetFeedbacks)
 	api.POST("/feedback", CreateFeedback)
 }

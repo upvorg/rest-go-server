@@ -126,7 +126,10 @@ func GetPostsByTag(tag string, c *gin.Context) (*[]model.Post, error) {
 
 func GetRecommendPosts() (*[]model.Post, error) {
 	var posts []model.Post
-	if err := db.Orm.Where("is_recommend = ?", 2).Order("posts.created_at desc").Find(&posts).Error; err != nil {
+	if err := db.Orm.Where("is_recommend = ?", 2).
+		Preload("Creator").
+		Preload("Meta").
+		Order("posts.created_at desc").Find(&posts).Error; err != nil {
 		return nil, err
 	}
 
