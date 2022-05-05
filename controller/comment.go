@@ -30,7 +30,7 @@ func CreateComment(c *gin.Context) {
 	body := &model.Comment{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
@@ -39,7 +39,7 @@ func CreateComment(c *gin.Context) {
 	body.Pid = uint(pid)
 	if body.Content == "" {
 		c.AbortWithStatusJSON(http.StatusPaymentRequired, gin.H{
-			"msg": "Content is required.",
+			"err": "Content is required.",
 		})
 		return
 	}
@@ -53,7 +53,7 @@ func DeleteCommentById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	comment := &model.Comment{}
 	if err := db.Orm.Where("id = ?", id).First(comment).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"err": err})
 		return
 	}
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)

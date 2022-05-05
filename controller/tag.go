@@ -14,7 +14,7 @@ func CreateTag(c *gin.Context) {
 	tag := &model.Tag{}
 	if err := c.ShouldBindJSON(&tag); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}

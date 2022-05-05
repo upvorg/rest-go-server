@@ -39,7 +39,7 @@ func GetPostsByMetaType(c *gin.Context) {
 	body := model.Meta{}
 	if err := c.ShouldBindQuery(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
@@ -60,7 +60,8 @@ func GetPostByTag(c *gin.Context) {
 }
 
 func GetRecommendPosts(c *gin.Context) {
-	posts, e := service.GetRecommendPosts()
+	size, _ := strconv.Atoi(c.Query("page_size"))
+	posts, e := service.GetRecommendPosts(size)
 	c.JSON(http.StatusOK, gin.H{
 		"data": posts,
 		"err":  e,
@@ -71,23 +72,23 @@ func CreatePost(c *gin.Context) {
 	body := &model.Post{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
 
 	user := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
 	body.Uid = uint(user.UserId)
-	if body.Type == "post" && body.Content == "" {
+	if body.Type == "post" && body.Content == "" && len(body.Content) < 15 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"msg": "Content is required.",
+			"err": "Content should not be empty or less than 15 characters.",
 		})
 		return
 	}
 
 	if common.IsUser(user.Level) && body.Type == "video" {
 		c.JSON(http.StatusForbidden, gin.H{
-			"msg": "You can't create video post.",
+			"err": "You can't create video post.",
 		})
 		return
 	}
@@ -123,7 +124,7 @@ func UpdatePost(c *gin.Context) {
 	body := &model.Post{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
@@ -232,12 +233,13 @@ func UpdatePostPv(c *gin.Context) {
 // https://www.cnblogs.com/yiyunkeji/p/7217738.html
 func GetPostDayRanking(c *gin.Context) {
 	posts := []*model.Post{}
+	size, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	if err := db.Orm.Model(&model.Post{}).
 		Preload("Creator").
 		Preload("Meta").
 		Select("posts.*, SUM(post_rankings.hits) as Hits").
 		Joins("left join post_rankings on post_rankings.pid = posts.id and to_days(post_rankings.hits_at) = to_days(now())").
-		Limit(20).
+		Limit(size).
 		Order("hits desc").
 		Group("posts.id").
 		Find(&posts).Error; err != nil {
@@ -254,12 +256,13 @@ func GetPostDayRanking(c *gin.Context) {
 
 func GetPostMonthRanking(c *gin.Context) {
 	posts := []*model.Post{}
+	size, _ := strconv.Atoi(c.DefaultQuery("page_size", "30"))
 	if err := db.Orm.Model(&model.Post{}).
 		Preload("Creator").
 		Preload("Meta").
 		Select("posts.*, SUM(post_rankings.hits) as Hits").
 		Joins("left join post_rankings on post_rankings.pid = posts.id and DATE_FORMAT(post_rankings.hits_at,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m')").
-		Limit(30).
+		Limit(size).
 		Order("hits desc").
 		Group("posts.id").
 		Find(&posts).Error; err != nil {
@@ -276,12 +279,13 @@ func GetPostMonthRanking(c *gin.Context) {
 
 func GetPostRanking(c *gin.Context) {
 	posts := []*model.Post{}
+	size, _ := strconv.Atoi(c.DefaultQuery("page_size", "50"))
 	if err := db.Orm.Model(&model.Post{}).
 		Preload("Creator").
 		Preload("Meta").
 		Select("posts.*, SUM(post_rankings.hits) as Hits").
 		Joins("left join post_rankings on post_rankings.pid = posts.id").
-		Limit(50).
+		Limit(size).
 		Order("hits desc").
 		Group("posts.id").
 		Find(&posts).Error; err != nil {

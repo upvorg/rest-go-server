@@ -25,3 +25,4 @@ env ENV=release /app &
 ## Refs
 
 - https://rapidapi.com/search/anime
+- https://darjun.github.io/2020/04/04/godailylib/validator/

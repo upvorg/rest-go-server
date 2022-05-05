@@ -59,7 +59,7 @@ func CollectPostById(c *gin.Context) {
 
 	if hasCollectedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": "You have collected this post.",
+			"err": "You have collected this post.",
 		})
 		return
 	}
@@ -77,7 +77,7 @@ func UncollectPostById(c *gin.Context) {
 
 	if !hasCollectedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": "You have collected this post.",
+			"err": "You have collected this post.",
 		})
 		return
 	}

@@ -23,7 +23,7 @@ func Register(c *gin.Context) {
 	body := LoginOrRegisterForm{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
@@ -58,7 +58,7 @@ func Login(c *gin.Context) {
 	body := LoginOrRegisterForm{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
@@ -136,7 +136,7 @@ func GetUsers(c *gin.Context) {
 	body := GetUsersForm{}
 	if err := c.ShouldBindQuery(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}

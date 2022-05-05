@@ -14,7 +14,7 @@ func CreateFeedback(c *gin.Context) {
 	feedback := &model.Feedback{}
 	if err := c.ShouldBindJSON(&feedback); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"msg": common.Translate(err),
+			"err": common.Translate(err),
 		})
 		return
 	}
@@ -34,9 +34,12 @@ func CreateFeedback(c *gin.Context) {
 
 func GetFeedbacks(c *gin.Context) {
 	feedbacks := []model.Feedback{}
-	err := db.Orm.Find(&feedbacks).Error
+	err := db.Orm.
+		Order("created_at DESC").
+		Find(&feedbacks).
+		Error
 	c.JSON(http.StatusOK, gin.H{
-		"err":       err,
-		"feedbacks": feedbacks,
+		"err":  err,
+		"data": feedbacks,
 	})
 }

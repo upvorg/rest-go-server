@@ -124,12 +124,14 @@ func GetPostsByTag(tag string, c *gin.Context) (*[]model.Post, error) {
 	return &posts, nil
 }
 
-func GetRecommendPosts() (*[]model.Post, error) {
+func GetRecommendPosts(size int) (*[]model.Post, error) {
 	var posts []model.Post
 	if err := db.Orm.Where("is_recommend = ?", 2).
 		Preload("Creator").
 		Preload("Meta").
-		Order("posts.created_at desc").Find(&posts).Error; err != nil {
+		Order("posts.created_at desc").
+		Limit(size).
+		Find(&posts).Error; err != nil {
 		return nil, err
 	}
 
