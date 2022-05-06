@@ -50,4 +50,7 @@ func Initialize(r *gin.Engine) {
 
 	api.GET("/feedbacks", GetFeedbacks)
 	api.POST("/feedback", CreateFeedback)
+
+	api.POST("/upload", FileUploader)
+	api.POST("/upload/image", SMMSImageUploder)
 }

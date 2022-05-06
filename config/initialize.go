@@ -8,11 +8,13 @@ import (
 )
 
 var (
-	AppMode  string = "debug"
-	AppPort  string = "8080"
-	Domain   string = "localhost"
-	MysqlDsn string
-	JwtSalt  string
+	AppMode      string = "debug"
+	AppPort      string = "8080"
+	Domain       string = "localhost"
+	MysqlDsn     string
+	JwtSalt      string
+	SMMSUserName string
+	SMMSPassword string
 )
 
 func Initialize() {
@@ -31,4 +33,6 @@ func Initialize() {
 
 	MysqlDsn = os.Getenv("MYSQL_DSN")
 	JwtSalt = os.Getenv("JWT_SALT")
+	SMMSUserName = os.Getenv("SMMS_USERNAME")
+	SMMSPassword = os.Getenv("SMMS_PASSWORD")
 }
