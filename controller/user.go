@@ -15,12 +15,17 @@ import (
 )
 
 type LoginOrRegisterForm struct {
+	Name string `json:"name" binding:"required"`
+	Pwd  string `json:"pwd" binding:"required"`
+}
+
+type RegisterForm struct {
 	Name string `json:"name" binding:"required,min=4,max=16"`
 	Pwd  string `json:"pwd" binding:"required,min=6,max=20"`
 }
 
 func Register(c *gin.Context) {
-	body := LoginOrRegisterForm{}
+	body := RegisterForm{}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": common.Translate(err),
@@ -32,19 +37,12 @@ func Register(c *gin.Context) {
 		Nickname: body.Name,
 		Pwd:      body.Pwd,
 	}
-	if user, error := service.Register(user); error != nil {
+	if user, token, error := service.Register(user); error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": error.Error(),
 		})
 	} else {
-		token, err := middleware.GenerateJwtToken(user.ID, user.Name, user.Level)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"err": err.Error(),
-			})
-			return
-		}
-		c.SetCookie("access_token", token, int(time.Now().Add(time.Hour*-1).Second()), "/", config.Domain, false, false)
+		c.SetCookie("access_token", token, int(time.Now().Add(time.Hour*24*7).Second()), "/", config.Domain, false, false)
 		c.JSON(http.StatusOK, gin.H{
 			"data": gin.H{
 				"user":         user,
@@ -65,7 +63,24 @@ func Login(c *gin.Context) {
 
 	user, err := service.GetUserByName(body.Name)
 	if err == gorm.ErrRecordNotFound {
-		Register(c)
+		if user, token, error := service.Register(&model.User{
+			Name:     body.Name,
+			Nickname: body.Name,
+			Pwd:      body.Pwd,
+			Email:    nil,
+		}); error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"err": error.Error(),
+			})
+		} else {
+			c.SetCookie("access_token", token, 3600*24*7, "/", config.Domain, false, false)
+			c.JSON(http.StatusOK, gin.H{
+				"data": gin.H{
+					"user":         user,
+					"access_token": token,
+				},
+			})
+		}
 		return
 	}
 
@@ -84,7 +99,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	c.SetCookie("access_token", token, int(time.Now().Add(time.Hour*-1).Second()), "/", config.Domain, false, false)
+	c.SetCookie("access_token", token, 3600*24*7, "/", config.Domain, false, false)
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
 			"user":         user,

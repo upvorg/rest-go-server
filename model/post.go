@@ -13,7 +13,7 @@ type Post struct {
 	Content         string         `gorm:"type:text"`
 	Uid             uint           `json:"-"`
 	Tags            string         `gorm:"size:100;column:tags"`
-	Status          uint8          `gorm:"default:4"`
+	Status          uint8          `gorm:"default:3"`
 	Type            string         `gorm:"default:post" binding:"required"`
 	IsPined         uint           `gorm:"default:1"`
 	IsRecommend     uint           `gorm:"default:1"`

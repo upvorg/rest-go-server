@@ -6,14 +6,15 @@ import (
 	"gorm.io/gorm"
 	"upv.life/server/common"
 	"upv.life/server/db"
+	"upv.life/server/middleware"
 	"upv.life/server/model"
 )
 
-func Register(user *model.User) (*model.User, error) {
+func Register(user *model.User) (*model.User, string, error) {
 
 	valid, err := CheckUserAndPwd(user.Name, user.Pwd)
 	if !valid {
-		return nil, err
+		return nil, "", err
 	}
 
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
@@ -26,14 +27,14 @@ func Register(user *model.User) (*model.User, error) {
 	})
 
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, "", result.Error
 	} else {
 		if baseuser, error := GetUserByName(user.Name); error != nil {
-			return nil, error
+			return nil, "", error
 		} else {
-			return baseuser, nil
+			token, _ := middleware.GenerateJwtToken(baseuser.ID, baseuser.Name, baseuser.Level)
+			return baseuser, token, nil
 		}
-
 	}
 }
 

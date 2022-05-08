@@ -37,7 +37,7 @@ func GetTags(c *gin.Context) {
 	tags, err := getDBTags()
 	c.JSON(http.StatusOK, gin.H{
 		"err":  err,
-		"tags": tags,
+		"data": tags,
 	})
 }
 

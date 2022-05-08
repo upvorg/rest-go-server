@@ -18,7 +18,7 @@ func GetCommentsByPostId(c *gin.Context) {
 		Preload("Creator").
 		Preload("Children").
 		Preload("Children.Creator").
-		Where("pid = ? AND parent_id IS NULL", id).
+		Where("pid = ? AND (parent_id IS NULL OR parent_id = 0)", id).
 		Order("created_at DESC").Find(&comments).Error
 	c.JSON(http.StatusOK, gin.H{
 		"data": comments,

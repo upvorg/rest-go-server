@@ -99,11 +99,15 @@ func CreatePost(c *gin.Context) {
 		body.IsRecommend = 0
 	}
 
+	if body.Type == "post" {
+		body.Status = 4
+	}
+
 	tags, _ := getDBTags()
 	body.Tags = common.FixTags(tags, body.Tags)
 
 	var err error
-	if body.Type == "video" {
+	if body.Type == "video" && body.Meta.Genre != "原创" {
 		err = db.Orm.Create(body).Error
 	} else {
 		err = db.Orm.Omit(clause.Associations).Create(body).Error

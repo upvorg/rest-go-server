@@ -55,7 +55,7 @@ func SMMSImageUploder(c *gin.Context) {
 		return
 	}
 
-	if url, err := _SMMSUploder(file, header.Filename); err != nil {
+	if url, err := _SMMSUploder(file, header.Filename, token); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"err": err.Error(),
 		})
@@ -122,14 +122,14 @@ func TencentCOSUploader(c *gin.Context) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-func _SMMSUploder(file multipart.File, filename string) (string, error) {
+func _SMMSUploder(file multipart.File, filename string, token string) (string, error) {
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	bodyWriter.WriteField("format", "json")
 	fileWriter, _ := bodyWriter.CreateFormFile("smfile", filename)
 	io.Copy(fileWriter, file)
 	req, _ := http.NewRequest("POST", "https://sm.ms/api/v2/upload", bodyBuf)
-	req.Header.Add("Authorization", "token")
+	req.Header.Add("Authorization", token)
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 
 	response, _ := http.DefaultClient.Do(req)
@@ -148,7 +148,7 @@ func _SMMSUploder(file multipart.File, filename string) (string, error) {
 			fmt.Print("unauthorized, retry", RetryCount)
 			RetryCount = 1
 			_SMMSAuth()
-			s, e := _SMMSUploder(file, filename)
+			s, e := _SMMSUploder(file, filename, token)
 			RetryCount = 0
 			return s, e
 		}
@@ -167,6 +167,7 @@ func _SMMSAuth() string {
 		body, _ := ioutil.ReadAll(response.Body)
 		var data map[string]interface{}
 		json.Unmarshal(body, &data)
+		fmt.Print(data["data"].(map[string]interface{})["token"].(string))
 		return data["data"].(map[string]interface{})["token"].(string)
 	}
 }
