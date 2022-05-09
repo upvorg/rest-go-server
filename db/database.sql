@@ -14,6 +14,7 @@ CREATE TABLE `posts` (
   `type` varchar(8) DEFAULT 'post' COMMENT 'post | video',
   `is_pined` TINYINT(1) DEFAULT 1 COMMENT '1=> | 2=>置顶',
   `is_recommend` TINYINT(1) DEFAULT 1 COMMENT '1=> | 2=>推荐',
+  `is_original` TINYINT(1) DEFAULT 1 COMMENT '1=>否 | 2=>是',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp DEFAULT NULL,

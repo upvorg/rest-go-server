@@ -17,6 +17,7 @@ func Initialize(r *gin.Engine) {
 	// :name is id!!
 	api.GET("/user/:name/likes", middleware.ShouldBeLogin(), GetLikesByUserId)
 	api.GET("/user/:name/collections", middleware.ShouldBeLogin(), GetCollectionsByUserId)
+	api.GET("/user/stat")
 
 	api.GET("/post/:id", GetPostById)
 	api.GET("/posts", GetPostsByMetaType)
@@ -30,6 +31,7 @@ func Initialize(r *gin.Engine) {
 	api.PUT("/post/:id", middleware.ShouldBeLogin(), UpdatePost)
 	api.DELETE("/post/:id", middleware.ShouldBeLogin(), DeletePostById)
 	api.DELETE("/posts", middleware.ShouldBeLogin(), DeletePostsById)
+	api.GET("/post/week", GetVideosUpdateOnWeek)
 
 	api.POST("/like/post/:id", middleware.ShouldBeLogin(), LikePostById)
 	api.DELETE("/like/post/:id", middleware.ShouldBeLogin(), UnlikePostById)

@@ -17,17 +17,18 @@ type Post struct {
 	Type            string         `gorm:"default:post" binding:"required"`
 	IsPined         uint           `gorm:"default:1"`
 	IsRecommend     uint           `gorm:"default:1"`
+	IsOriginal      uint           `gorm:"default:1"`
 	CreatedAt       *time.Time     `gorm:"type:timestamp"`
 	UpdatedAt       *time.Time     `gorm:"type:timestamp"`
 	DeletedAt       gorm.DeletedAt `json:"-"`
 	Meta            *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
 	Creator         *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
-	Hits            uint           `gorm:"<-:false"`
-	LikesCount      uint           `gorm:"<-:false"`
-	CommentCount    uint           `gorm:"<-:false"`
-	CollectionCount uint           `gorm:"<-:false"`
-	IsLiked         uint           `gorm:"<-:false;default:1"`
-	IsCollected     uint           `gorm:"<-:false"`
+	Hits            uint           `gorm:"<-:false" json:"Hits,omitempty"`
+	LikesCount      uint           `gorm:"<-:false" json:"LikesCount,omitempty"`
+	CommentCount    uint           `gorm:"<-:false" json:"CommentCount,omitempty"`
+	CollectionCount uint           `gorm:"<-:false" json:"CollectionCount,omitempty"`
+	IsLiked         uint           `gorm:"<-:false" json:"IsLiked,omitempty"`
+	IsCollected     uint           `gorm:"<-:false" json:"IsCollected,omitempty"`
 }
 
 type PostRanking struct {
@@ -58,10 +59,11 @@ func (vm *VideoMeta) TableName() string {
 //api
 
 type Meta struct {
-	KeyWord string `form:"keyword,omitempty"`
-	Type    string `form:"type,omitempty,default=video"`
-	Region  string `form:"region,omitempty"`
-	IsEnd   int    `form:"isend,omitempty"`
-	Genre   string `form:"genre,omitempty"`
-	Tag     string `form:"tag,omitempty"`
+	KeyWord    string `form:"keyword,omitempty"`
+	Type       string `form:"type,omitempty,default=video"`
+	Region     string `form:"region,omitempty"`
+	IsEnd      int    `form:"isend,omitempty"`
+	Genre      string `form:"genre,omitempty"`
+	Tag        string `form:"tag,omitempty"`
+	IsOriginal uint   `form:"is_original,omitempty"`
 }

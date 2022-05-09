@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -301,6 +302,34 @@ func GetPostRanking(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": posts,
+	})
+}
+
+func GetVideosUpdateOnWeek(c *gin.Context) {
+	posts := []*model.Post{}
+	if err := db.Orm.Model(&model.Post{}).
+		Preload("Meta").
+		Joins("left join video_metas on video_metas.pid = posts.id").
+		Where("posts.type = 'video' AND posts.is_original <> 2 AND video_metas.is_end <> 2").
+		Order("video_metas.updated_date desc").
+		Find(&posts).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"err": err,
+		})
+		return
+	}
+	var week []interface{}
+	for i := 0; i < 7; i++ {
+		week = append(week, []*model.Post{})
+	}
+	for _, post := range posts {
+		if post.Meta.UpdatedDate != nil {
+			fmt.Print(post.Meta.UpdatedDate.Weekday())
+			week[post.Meta.UpdatedDate.Weekday()] = append(week[post.Meta.UpdatedDate.Weekday()].([]*model.Post), post)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data": week,
 	})
 }
 

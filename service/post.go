@@ -90,6 +90,10 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 		tx.Where("posts.title LIKE ? OR posts.content LIKE ?", "%"+m.KeyWord+"%", "%"+m.KeyWord+"%")
 	}
 
+	if m.IsOriginal != 0 {
+		tx.Where("posts.is_original = ?", m.IsOriginal)
+	}
+
 	if m.Genre != "" {
 		tx.Where("video_metas.genre = ?", m.Genre)
 	}
