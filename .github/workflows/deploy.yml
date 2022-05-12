@@ -33,5 +33,6 @@ jobs:
             sudo fuser -k 8081/tcp
             df -h
           after_script: |
-            env ENV=release &  /yszm/main &
+            cd /yszm
+            env ENV=release &  ./main &
             sudo service nginx restart
