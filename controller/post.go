@@ -327,17 +327,19 @@ func ReviewPost(c *gin.Context) {
 		return
 	}
 
-	status := c.Query("status")
-	if status == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": "required status",
+	status, _ := strconv.Atoi(c.Query("status"))
+	IsRecommend, _ := strconv.Atoi(c.Query("is_recommend"))
+
+	fmt.Print(status, IsRecommend, "gfhjkl;")
+	tx := db.Orm.Model(&model.Post{}).
+		Where("id = ?", id).
+		Updates(&model.Post{
+			Status:      uint(status),
+			IsRecommend: uint(IsRecommend),
 		})
-		return
-	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Model(&model.Post{}).
-			Where("id = ?", id).Update("status", status).Error,
+		"err": tx.Error,
 	})
 
 }
