@@ -24,7 +24,7 @@ func Initialize() {
 	if os.Getenv("ENV") != "" {
 		AppMode = os.Getenv("ENV")
 	}
-	if os.Getenv("PORT") != "" {
+	if os.Getenv("APP_PORT") != "" {
 		AppPort = os.Getenv("APP_PORT")
 	}
 	if os.Getenv("APP_DOMAIN") != "" {

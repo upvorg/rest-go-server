@@ -1,3 +1,7 @@
+## Deploy Status
+
+[![deploy](https://github.com/upvorg/server2/actions/workflows/deploy.yml/badge.svg)](https://github.com/upvorg/server2/actions/workflows/deploy.yml)
+
 ## Envrionment
 
 - go version go1.18.1 darwin/amd64

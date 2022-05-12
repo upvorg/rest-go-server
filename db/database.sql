@@ -91,6 +91,11 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
+--  add root user
+INSERT INTO `users` (`name`, `nickname`, `pwd`, `level`)
+VALUES ('root', 'root', '$2a$04$SKhBaklLI3Ky1c5K8O0hbOqnKTobiq1Q1LLoQSXPjOl5RUVUfujM.',1);
+
+
 
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
@@ -139,3 +144,4 @@ CREATE TABLE `feedbacks` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+
