@@ -1,0 +1,39 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2.4.0
+
+      - name: build
+        run: |
+          go mod download
+          go build -o ./main ./main.go
+
+      - name: SSH Server Deploy
+        uses: kostya-ten/ssh-server-deploy@v4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: 22
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          scp_source: ./main
+          scp_target: /yszm/
+          before_script: |
+            sudo service yszm stop
+            df -h
+          after_script: |
+            sudo service yszm start
+            sudo service yszm status
+            sudo service nginx restart
+
