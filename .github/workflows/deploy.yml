@@ -33,7 +33,7 @@ jobs:
             sudo service yszm stop
             df -h
           after_script: |
-            sudo service yszm start
+            env ENV=release & sudo service yszm start
             sudo service yszm status
             sudo service nginx restart
 
