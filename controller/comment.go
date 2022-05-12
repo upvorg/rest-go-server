@@ -11,6 +11,30 @@ import (
 	"upv.life/server/model"
 )
 
+func GetComments(c *gin.Context) {
+	var comments []model.Comment
+
+	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
+	tx := db.Orm.Model(&model.Comment{}).
+		Scopes(model.Paginate(c)).
+		Preload("Creator").
+		Preload("Post").
+		Preload("Children").
+		Preload("Children.Creator").
+		Where("(parent_id IS NULL OR parent_id = 0)")
+
+	if !(common.IsAdmin(ctxUser.Level) || common.IsRoot(ctxUser.Level)) {
+		tx = tx.Joins("LEFT JOIN posts ON posts.id = comments.pid").
+			Where("posts.uid = ?", ctxUser.UserId)
+	}
+
+	err := tx.Order("created_at DESC").Find(&comments).Error
+	c.JSON(http.StatusOK, gin.H{
+		"err":  err,
+		"data": comments,
+	})
+}
+
 func GetCommentsByPostId(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var comments []model.Comment

@@ -18,5 +18,6 @@ type Comment struct {
 	CreatedAt *time.Time     `gorm:"type:timestamp"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 	Creator   *User          `gorm:"foreignKey:Uid" json:"Creator,omitempty"`
+	Post      *Post          `gorm:"foreignKey:Pid" json:"Post,omitempty"`
 	Children  []*Comment     `gorm:"foreignKey:parent_id" json:"Children,omitempty"`
 }

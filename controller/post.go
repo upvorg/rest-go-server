@@ -80,38 +80,15 @@ func CreatePost(c *gin.Context) {
 
 	user := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
 	body.Uid = uint(user.UserId)
-	if body.Type == "post" && body.Content == "" && len(body.Content) < 15 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"err": "Content should not be empty or less than 15 characters.",
-		})
+	if !checkPostField(c, body, user) {
 		return
 	}
-
-	if common.IsUser(user.Level) && body.Type == "video" {
-		c.JSON(http.StatusForbidden, gin.H{
-			"err": "You can't create video post.",
-		})
-		return
-	}
-
-	if !common.IsRoot(user.Level) {
-		body.Status = 0
-		body.IsPined = 0
-		body.IsRecommend = 0
-	}
-
-	if body.Type == "post" {
-		body.Status = 4
-	}
-
-	tags, _ := getDBTags()
-	body.Tags = common.FixTags(tags, body.Tags)
 
 	var err error
-	if body.Type == "video" && body.Meta.Genre != "原创" {
-		err = db.Orm.Create(body).Error
-	} else {
+	if body.Type == "video" && body.IsOriginal == 2 {
 		err = db.Orm.Omit(clause.Associations).Create(body).Error
+	} else {
+		err = db.Orm.Create(body).Error
 	}
 
 	if err != nil {
@@ -141,26 +118,32 @@ func UpdatePost(c *gin.Context) {
 	}
 
 	user := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
-	if !common.IsRoot(user.Level) {
-		body.Status = 0
-		body.IsPined = 0
-		body.IsRecommend = 0
+	if !checkPostField(c, body, user) {
+		return
 	}
-
-	tags, _ := getDBTags()
-	body.Tags = common.FixTags(tags, body.Tags)
 
 	var err error
 	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
 		err = er
 	}
-	if er := db.Orm.Model(&model.VideoMeta{}).Where("pid = ?", body.ID).Updates(body.Meta).Error; er != nil {
-		err = er
+
+	if body.Type == "video" && body.IsOriginal != 2 {
+		body.IsOriginal = 0 // 禁止修改
+		if er2 := db.Orm.Model(&model.VideoMeta{}).Where("pid = ?", body.ID).Updates(body.Meta).Error; er2 != nil {
+			err = er2
+		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"err": err,
-	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err.Error(),
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"data": body,
+		})
+	}
+
 }
 
 func DeletePostById(c *gin.Context) {
@@ -333,6 +316,32 @@ func GetVideosUpdateOnWeek(c *gin.Context) {
 	})
 }
 
+func ReviewPost(c *gin.Context) {
+	id := c.Param("id")
+	level := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).Level
+
+	if !common.IsAdmin(level) && !common.IsRoot(level) {
+		c.JSON(http.StatusForbidden, gin.H{
+			"err": "Forbidden",
+		})
+		return
+	}
+
+	status := c.Query("status")
+	if status == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "required status",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"err": db.Orm.Model(&model.Post{}).
+			Where("id = ?", id).Update("status", status).Error,
+	})
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 func isYourPost(c *gin.Context, body *model.Post) bool {
@@ -342,9 +351,39 @@ func isYourPost(c *gin.Context, body *model.Post) bool {
 		return false
 	}
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
-	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (post.Uid != ctxUser.UserId || body.Status != 0) {
+	if !(common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level)) && (post.Uid != ctxUser.UserId || body.Status != post.Status) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"err": "Forbidden."})
 		return false
 	}
+	return true
+}
+
+func checkPostField(c *gin.Context, body *model.Post, user *middleware.AuthClaims) bool {
+	if body.Type == "post" && len(body.Content) < 15 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"err": "Content should not be empty or less than 15 characters.",
+		})
+		return false
+	}
+
+	if common.IsUser(user.Level) && body.Type == "video" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"err": "You have no permission.",
+		})
+		return false
+	}
+
+	if !common.IsRoot(user.Level) {
+		body.Status = 0
+		body.IsPined = 0
+		body.IsRecommend = 0
+	}
+
+	if body.Type == "post" {
+		body.Status = 4
+	}
+
+	tags, _ := getDBTags()
+	body.Tags = common.FixTags(tags, body.Tags)
 	return true
 }

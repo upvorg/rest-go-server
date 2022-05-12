@@ -70,7 +70,6 @@ CREATE TABLE `tags` (
   `name` varchar(20) NOT NULL UNIQUE,
   `synopsis` varchar(200) DEFAULT '',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 

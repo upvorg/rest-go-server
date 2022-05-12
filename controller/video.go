@@ -22,7 +22,7 @@ func GetVideosByPostId(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "post id is invalid"})
 		return
 	}
-	if err := db.Orm.Where("pid = ?", postID).Find(&videos).Error; err != nil {
+	if err := db.Orm.Where("pid = ?", postID).Order("episode DESC").Find(&videos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

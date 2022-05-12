@@ -82,12 +82,20 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 		Order("posts.created_at desc").
 		Group("posts.id")
 
+	if m.Status != "" {
+		tx = tx.Where("posts.status = ?", m.Status)
+	}
+
 	if m.Tag != "" {
 		tx.Where("posts.tags LIKE ?", "%"+m.Tag+"%")
 	}
 
 	if m.KeyWord != "" {
 		tx.Where("posts.title LIKE ? OR posts.content LIKE ?", "%"+m.KeyWord+"%", "%"+m.KeyWord+"%")
+	}
+
+	if m.Uid != "" {
+		tx.Where("posts.uid = ?", m.Uid)
 	}
 
 	if m.IsOriginal != 0 {

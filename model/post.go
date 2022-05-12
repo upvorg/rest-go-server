@@ -66,4 +66,19 @@ type Meta struct {
 	Genre      string `form:"genre,omitempty"`
 	Tag        string `form:"tag,omitempty"`
 	IsOriginal uint   `form:"is_original,omitempty"`
+	Uid        string `form:"uid,omitempty"`
+	Status     string `form:"status,omitempty"`
+}
+
+type PostActicity struct {
+	Type         string // like, comment, collection
+	PostType     string // post, video
+	Pid          uint
+	Uid          uint
+	PostTitle    string
+	UserName     string
+	UserNickname string
+	UserAvatar   string
+	Comment      string `json:"Comment,omitempty"`
+	CreatedAt    *time.Time
 }

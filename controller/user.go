@@ -67,7 +67,7 @@ func Login(c *gin.Context) {
 			Name:     body.Name,
 			Nickname: body.Name,
 			Pwd:      body.Pwd,
-			Email:    nil,
+			Email:    "",
 		}); error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"err": error.Error(),
@@ -108,14 +108,17 @@ func Login(c *gin.Context) {
 	})
 }
 
-//TODO: postcount pv likecount collectcount commentcount
 func GetUser(c *gin.Context) {
 	ctxUser, _ := c.Get(middleware.CTX_AUTH_KEY)
 	uid := uint(ctxUser.(*middleware.AuthClaims).UserId)
 	var user model.User
-	if err := db.Orm.Where("id = ?", uid).Find(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"err": err,
+	if err := db.Orm.Where("id = ?", uid).First(&user).Error; err != nil {
+		code := http.StatusInternalServerError
+		if err == gorm.ErrRecordNotFound {
+			code = http.StatusUnauthorized
+		}
+		c.JSON(code, gin.H{
+			"err": err.Error(),
 		})
 		return
 	}
@@ -159,7 +162,7 @@ func GetUsers(c *gin.Context) {
 	var users []model.User
 	tx := db.Orm.Scopes(model.Paginate(c))
 
-	if body.Level != nil {
+	if body.Level != nil && *body.Level != 0 {
 		tx.Where("level = ?", body.Level)
 	}
 
@@ -171,7 +174,7 @@ func GetUsers(c *gin.Context) {
 		tx.Where("name LIKE ? OR nickname LIKE ?", "%"+body.Keyword+"%", "%"+body.Keyword+"%")
 	}
 
-	tx.Find(&users)
+	tx.Order("created_at DESC").Find(&users)
 
 	c.JSON(http.StatusOK, gin.H{"data": users})
 }
@@ -187,11 +190,22 @@ func UpdateUserByName(c *gin.Context) {
 	}
 
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
-	if !common.IsRoot(ctxUser.Level) && (userName != ctxUser.Name || body.Status != 0 || body.Level != 0) {
-		c.JSON(http.StatusForbidden, gin.H{
-			"err": "Forbidden.",
-		})
-		return
+	if common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level) {
+		user, _ := service.GetUserByName(userName)
+		if user != nil && (ctxUser.Name != user.Name && ctxUser.Level <= user.Level) ||
+			(ctxUser.UserId == user.ID && (body.Status != 0 || body.Level != 0)) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"err": "Forbidden.",
+			})
+			return
+		}
+	} else {
+		if userName != ctxUser.Name || body.Status != 0 || body.Level != 0 {
+			c.JSON(http.StatusForbidden, gin.H{
+				"err": "Forbidden.",
+			})
+			return
+		}
 	}
 
 	if !service.IsUserExistByName(userName) {
@@ -201,15 +215,16 @@ func UpdateUserByName(c *gin.Context) {
 		return
 	}
 
-	if body.Name != "" {
-		if _, err := service.CheckUserName(body.Name); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"err": err.Error(),
-			})
-			return
-		}
-	}
+	// if body.Name != "" {
+	// 	if _, err := service.CheckUserName(body.Name); err != nil {
+	// 		c.JSON(http.StatusBadRequest, gin.H{
+	// 			"err": err.Error(),
+	// 		})
+	// 		return
+	// 	}
+	// }
 
+	body.Name = ""
 	if body.Pwd != "" && common.CheckPassword(body.Pwd) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "Invalid password.",
@@ -223,4 +238,64 @@ func UpdateUserByName(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"err": nil})
+}
+
+func GetUserStat(c *gin.Context) {
+	ctxUser, _ := c.Get(middleware.CTX_AUTH_KEY)
+	uid := uint(ctxUser.(*middleware.AuthClaims).UserId)
+	var userStat model.UserStat
+
+	// TODO: 重用posts表 注释查出来是多条数据
+	err := db.Orm.Raw(`SELECT
+	(SELECT COUNT(l.id) FROM likes l LEFT JOIN posts on posts.uid = ? WHERE l.pid IN(posts.id)) as LikesCount,
+	(SELECT COUNT(c.id) FROM collections c LEFT JOIN posts on posts.uid = ? WHERE c.pid IN(posts.id)) as CollectionCount,
+	(SELECT COUNT(cm.id) FROM comments cm LEFT JOIN posts on posts.uid = ? WHERE cm.pid IN(posts.id)) as CommentCount,
+	(SELECT SUM(pr.hits) FROM post_rankings pr LEFT JOIN posts on posts.uid = ? AND posts.type = "post" WHERE pr.pid IN(posts.id)) as Pits,
+	(SELECT SUM(vr.hits) FROM post_rankings vr LEFT JOIN posts on posts.uid = ? AND posts.type = "video" WHERE vr.pid IN(posts.id)) as Vits
+	`, uid, uid, uid, uid, uid).Scan(&userStat).Error
+
+	// err = db.Orm.Model(&model.Post{}).
+	// 	Select(`
+	// 	posts.id,
+	// 	(SELECT COUNT(id) FROM likes WHERE likes.pid = posts.id) as LikesCount,
+	// 	(SELECT COUNT(id) FROM collections WHERE collections.pid = posts.id) as CollectionCount,
+	// 	(SELECT COUNT(id) FROM comments WHERE comments.pid = posts.id) as CommentCount,
+	// 	(SELECT SUM(hits) FROM post_rankings WHERE pid = posts.id) as Hits
+	// 	`).
+	// 	Where("posts.uid = ?", uid).
+	// 	Group("posts.type, posts.id").
+	// 	Scan(&userStat).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": userStat,
+	})
+}
+
+func GetUserPostActivity(c *gin.Context) {
+	ctxUser, _ := c.Get(middleware.CTX_AUTH_KEY)
+	uid := uint(ctxUser.(*middleware.AuthClaims).UserId)
+	var activities []model.PostActicity
+	if err := db.Orm.Raw(`
+	SELECT 'like' as type,posts.type as PostType,'' as Comment, posts.id as pid, posts.title as PostTitle, likes.created_at as CreatedAt, users.name as UserName,users.nickname as UserNickname,users.avatar as UserAvatar from likes LEFT JOIN posts on posts.id = likes.pid LEFT JOIN users on users.id = posts.uid WHERE posts.uid = ?
+	UNION ALL
+	SELECT 'collection',posts.type,'',posts.id, posts.title, collections.created_at, users.name,users.nickname,users.avatar from collections LEFT JOIN posts on posts.id = collections.pid LEFT JOIN users on users.id = posts.uid WHERE posts.uid = ?
+	UNION ALL
+	SELECT 'comment',posts.type, comments.content, posts.id, posts.title, comments.created_at, users.name,users.nickname,users.avatar from comments LEFT JOIN posts on posts.id = comments.pid LEFT JOIN users on users.id = posts.uid WHERE posts.uid = ?
+	ORDER BY CreatedAt DESC LIMIT 15`, uid, uid, uid).Scan(&activities).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": activities,
+	})
 }
