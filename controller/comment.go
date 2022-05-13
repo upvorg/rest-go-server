@@ -23,7 +23,7 @@ func GetComments(c *gin.Context) {
 		Preload("Children.Creator").
 		Where("(parent_id IS NULL OR parent_id = 0)")
 
-	if !(common.IsAdmin(ctxUser.Level) || common.IsRoot(ctxUser.Level)) {
+	if !(common.IsAdmin(ctxUser.Level) && !common.IsRoot(ctxUser.Level)) {
 		tx = tx.Joins("LEFT JOIN posts ON posts.id = comments.pid").
 			Where("posts.uid = ?", ctxUser.UserId)
 	}

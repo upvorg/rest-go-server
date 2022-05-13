@@ -11,11 +11,11 @@ import (
 	"upv.life/server/model"
 )
 
-func hasLikedPost(pid uint, uid uint) bool {
+func IsNotLikedPost(pid uint, uid uint) bool {
 	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Like{}).Error == gorm.ErrRecordNotFound
 }
 
-func hasCollectedPost(pid uint, uid uint) bool {
+func IsNotCollectedPost(pid uint, uid uint) bool {
 	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Collection{}).Error == gorm.ErrRecordNotFound
 }
 
@@ -23,7 +23,7 @@ func LikePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
-	if hasLikedPost(uint(id), uid) {
+	if !IsNotLikedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "You have liked this post.",
 		})
@@ -42,7 +42,7 @@ func LikePostById(c *gin.Context) {
 func UnlikePostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
-	if !hasLikedPost(uint(id), uid) {
+	if IsNotLikedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "repeatedly",
 		})
@@ -57,7 +57,7 @@ func CollectPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
-	if hasCollectedPost(uint(id), uid) {
+	if !IsNotCollectedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "You have collected this post.",
 		})
@@ -75,7 +75,7 @@ func UncollectPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
-	if !hasCollectedPost(uint(id), uid) {
+	if IsNotCollectedPost(uint(id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "You have collected this post.",
 		})

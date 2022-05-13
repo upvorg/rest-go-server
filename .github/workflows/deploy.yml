@@ -34,5 +34,4 @@ jobs:
             df -h
           after_script: |
             cd /yszm
-            env ENV=release &  ./main &
-            sudo service nginx restart
+            ./main &
