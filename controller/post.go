@@ -20,9 +20,9 @@ func GetPostById(c *gin.Context) {
 	var post *model.Post
 	var err error
 	if user, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
-		post, err = service.GetPostById(uint(id), user.(*middleware.AuthClaims).UserId)
+		post, err = service.GetPostById(uint(id), user.(*middleware.AuthClaims).UserId, user.(*middleware.AuthClaims).Level)
 	} else {
-		post, err = service.GetPostById(uint(id), 0)
+		post, err = service.GetPostById(uint(id), 0, 0)
 	}
 
 	if err != nil {
@@ -341,7 +341,6 @@ func ReviewPost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"err": tx.Error,
 	})
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////

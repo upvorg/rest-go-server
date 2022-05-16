@@ -6,6 +6,14 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	POST_STATUS_DELETED   uint = 1
+	POST_STATUS_REJECT    uint = 2
+	POST_STATUS_PENDING   uint = 3
+	POST_STATUS_PUBLISHED uint = 4
+	POST_STATUS_DRAFT     uint = 5
+)
+
 type Post struct {
 	ID              uint           `gorm:"primaryKey"`
 	Cover           string         `gorm:"size:200"`

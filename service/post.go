@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"upv.life/server/common"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
@@ -24,9 +25,11 @@ func GetSimplePostByID(id uint) (*model.Post, error) {
 	return &post, nil
 }
 
-func GetPostById(id uint, uid uint) (*model.Post, error) {
+func GetPostById(id uint, uid uint, level uint) (*model.Post, error) {
 	var post model.Post
 	withUserQuery := ""
+	tx := db.Orm.Model(&model.Post{})
+
 	if uid != 0 {
 		withUserQuery = fmt.Sprintf(`
 		,IF((SELECT id FROM likes WHERE likes.pid = posts.id AND likes.uid = %d),2,1) as IsLiked,
@@ -35,7 +38,8 @@ func GetPostById(id uint, uid uint) (*model.Post, error) {
 	} else {
 		withUserQuery = `,1 as IsLiked,1 as IsCollected`
 	}
-	if err := db.Orm.Model(&model.Post{}).
+
+	err := tx.
 		Preload("Creator").
 		Preload("Meta").
 		Select(`
@@ -47,18 +51,38 @@ func GetPostById(id uint, uid uint) (*model.Post, error) {
 		`+withUserQuery).
 		Where("posts.id = ?", id).
 		Group("posts.id").
-		First(&post).Error; err == gorm.ErrRecordNotFound {
+		First(&post).Error
+
+	if err == gorm.ErrRecordNotFound {
 		return nil, errors.New("post not found")
 	} else if err != nil {
 		return nil, err
 	}
+
+	if post.Status != model.POST_STATUS_PUBLISHED {
+		if uid == 0 {
+			return nil, errors.New("post not found")
+		} else {
+			if post.Creator.ID != uid {
+				return &post, nil
+			}
+			if !common.IsAdmin(level) && !common.IsRoot(level) {
+				return nil, errors.New("post not found")
+			}
+		}
+	}
+
 	return &post, nil
 }
 
+//TODO: 前台不返回不为 POST_STATUS_PUBLISHED 的文章
 func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	var posts []model.Post
 	withUserQuery := ""
-	if user, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
+	tx := db.Orm.Model(&model.Post{}).Scopes(model.Paginate(c))
+	user, exists := c.Get(middleware.CTX_AUTH_KEY)
+
+	if exists {
 		withUserQuery = fmt.Sprintf(`
 		,IF((SELECT id FROM likes WHERE likes.pid = posts.id AND likes.uid = %d),2,1) as IsLiked,
 		IF((SELECT id FROM collections WHERE collections.pid = posts.id AND collections.uid = %d),2,1) as IsCollected
@@ -67,7 +91,7 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 		withUserQuery = `,1 as IsLiked,1 as IsCollected`
 	}
 
-	tx := db.Orm.Model(&model.Post{}).Scopes(model.Paginate(c)).
+	tx.
 		Preload("Creator").
 		Preload("Meta").
 		Select(`
@@ -82,8 +106,12 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 		Order("posts.created_at desc").
 		Group("posts.id")
 
+	if m.Uid != "" {
+		tx.Where("posts.uid = ?", m.Uid)
+	}
+
 	if m.Status != "" {
-		tx = tx.Where("posts.status = ?", m.Status)
+		tx.Where("posts.status = ?", m.Status)
 	}
 
 	if m.Tag != "" {
@@ -92,10 +120,6 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 
 	if m.KeyWord != "" {
 		tx.Where("posts.title LIKE ? OR posts.content LIKE ?", "%"+m.KeyWord+"%", "%"+m.KeyWord+"%")
-	}
-
-	if m.Uid != "" {
-		tx.Where("posts.uid = ?", m.Uid)
 	}
 
 	if m.IsOriginal != 0 {
