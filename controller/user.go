@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -192,8 +193,14 @@ func UpdateUserByName(c *gin.Context) {
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
 	if common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level) {
 		user, _ := service.GetUserByName(userName)
-		if user != nil && (ctxUser.Name != user.Name && ctxUser.Level <= user.Level) ||
-			(ctxUser.UserId == user.ID && (body.Status != 0 || body.Level != 0)) {
+		if user != nil &&
+			// 低等级不能修改高等级只能修改自己
+			(ctxUser.UserId != user.ID && ctxUser.Level < user.Level) ||
+			//除了ROOT 其他角色不能修改自己的等级和状态
+			(!common.IsRoot(ctxUser.Level) && ctxUser.UserId == user.ID &&
+				(body.Status != user.Level || body.Level != user.Level)) {
+
+			fmt.Println(ctxUser.UserId, user.ID, ctxUser.Level, user.Level)
 			c.JSON(http.StatusForbidden, gin.H{
 				"err": "Forbidden.",
 			})
@@ -214,15 +221,6 @@ func UpdateUserByName(c *gin.Context) {
 		})
 		return
 	}
-
-	// if body.Name != "" {
-	// 	if _, err := service.CheckUserName(body.Name); err != nil {
-	// 		c.JSON(http.StatusBadRequest, gin.H{
-	// 			"err": err.Error(),
-	// 		})
-	// 		return
-	// 	}
-	// }
 
 	body.Name = ""
 	if body.Pwd != "" && common.CheckPassword(body.Pwd) {
