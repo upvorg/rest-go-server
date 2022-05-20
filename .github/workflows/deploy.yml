@@ -31,7 +31,9 @@ jobs:
           scp_target: /yszm/
           before_script: |
             sudo fuser -k 8081/tcp
-            df -h
           after_script: |
+            #./main & >  /dev/null 2>&1
+            #nohup ./main & >/dev/null
             cd /yszm
-            ./main &
+            nohup ./main & >/dev/null
+            df -h
