@@ -9,7 +9,7 @@ type Video struct {
 	Title         string `gorm:"size:60;"`
 	TitleJapanese string `gorm:"size:60"`
 	TitleRomanji  string `gorm:"size:60"`
-	VideoUrl      string `gorm:"size:200"`
+	VideoUrl      string `gorm:"size:1024"`
 	Synopsis      string `gorm:"size:200"`
 	Uid           uint
 	Pid           uint

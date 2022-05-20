@@ -19,11 +19,11 @@ func GetVideosByPostId(c *gin.Context) {
 	)
 	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "post id is invalid"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "post id is invalid"})
 		return
 	}
 	if err := db.Orm.Where("pid = ?", postID).Order("episode DESC").Find(&videos).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": videos})
@@ -35,18 +35,18 @@ func CreateVideo(c *gin.Context) {
 		video  model.Video
 	)
 	if err := c.BindJSON(&video); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
 	postID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
 	if p, _ := service.GetSimplePostByID(uint(postID)); p == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "post not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "post not found"})
 		return
 	}
 	video.Pid = uint(postID)
 	video.Uid = uint(c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId)
 	if err := db.Orm.Create(&video).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": video})
@@ -59,7 +59,7 @@ func DeleteVideoById(c *gin.Context) {
 	}
 
 	if err := db.Orm.Where("id = ?", videoID).Delete(&model.Video{}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{"data": err})
@@ -72,7 +72,7 @@ func UpdateVideoById(c *gin.Context) {
 		video   = &model.Video{}
 	)
 	if err := c.BindJSON(&video); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
 	videoID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
@@ -81,7 +81,7 @@ func UpdateVideoById(c *gin.Context) {
 	}
 
 	if err := db.Orm.Model(&model.Video{}).Where("id = ?", videoID).Updates(video).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": video})
@@ -92,7 +92,7 @@ func UpdateVideoById(c *gin.Context) {
 func isYourVideo(c *gin.Context, vid uint) bool {
 	var video model.Video
 	if err := db.Orm.Model(&model.Video{}).Where("id = ?", vid).First(&video).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return false
 	}
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)

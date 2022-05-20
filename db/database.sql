@@ -54,7 +54,7 @@ CREATE TABLE `videos` (
   `title` varchar(60) DEFAULT '',
   `title_japanese` varchar(60) DEFAULT '',
   `title_romanji` varchar(60) DEFAULT '',
-  `video_url` varchar(200) NOT NULL,
+  `video_url` varchar(1024) NOT NULL,
   `synopsis` varchar(200) DEFAULT '',
   `pid` int NOT NULL,
   `uid` int NOT NULL,
@@ -144,4 +144,3 @@ CREATE TABLE `feedbacks` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
-

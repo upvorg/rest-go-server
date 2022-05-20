@@ -27,7 +27,7 @@ func GetPostById(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+			"err": err.Error(),
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
@@ -122,13 +122,41 @@ func UpdatePost(c *gin.Context) {
 		return
 	}
 
+	selects := []string{
+		"Cover",
+		"Title",
+		"Content",
+		"Tags",
+	}
+	tx := db.Orm.Model(&model.Post{}).Where("id = ?", body.ID)
 	var err error
-	if er := db.Orm.Model(&model.Post{}).Where("id =?", body.ID).Updates(body).Error; er != nil {
-		err = er
+
+	if !common.IsAdmin(user.Level) || !common.IsRoot(user.Level) {
+		if er := tx.Select(selects).Updates(body).Error; er != nil {
+			err = er
+		}
+	} else {
+		// TODO: GET Columns no ZERO value. "" | 0 | nil
+		// eg: getNotZeroColumns(struct, []string{})
+		//     getNotZeroColumns(struct)
+		if body.Status != 0 {
+			selects = append(selects, "Status")
+		}
+		if body.IsPined != 0 {
+			selects = append(selects, "IsPined")
+		}
+		if body.IsRecommend != 0 {
+			selects = append(selects, "IsRecommend")
+		}
+		if body.IsOriginal != 0 {
+			selects = append(selects, "IsOriginal")
+		}
+		if er := tx.Select(selects).Updates(body).Error; er != nil {
+			err = er
+		}
 	}
 
 	if body.Type == "video" && body.IsOriginal != 2 {
-		body.IsOriginal = 0 // 禁止修改
 		if er2 := db.Orm.Model(&model.VideoMeta{}).Where("pid = ?", body.ID).Updates(body.Meta).Error; er2 != nil {
 			err = er2
 		}
@@ -374,7 +402,7 @@ func checkPostField(c *gin.Context, body *model.Post, user *middleware.AuthClaim
 		return false
 	}
 
-	if !common.IsRoot(user.Level) {
+	if !common.IsRoot(user.Level) || !common.IsAdmin(user.Level) {
 		body.Status = 0
 		body.IsPined = 0
 		body.IsRecommend = 0
