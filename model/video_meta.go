@@ -3,13 +3,12 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type VideoMeta struct {
 	ID            uint           `gorm:"primaryKey" json:"-"`
-	Pid           uuid.UUID      `gorm:"not null" json:"-"`
+	Pid           string         `gorm:"not null" json:"-"`
 	TitleJapanese string         `gorm:"size:60"`
 	TitleRomanji  string         `gorm:"size:60"`
 	Genre         string         `gorm:"not null;size:10;default:新番" form:"genre,default=新番"`

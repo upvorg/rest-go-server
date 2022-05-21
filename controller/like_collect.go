@@ -4,23 +4,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
 )
 
-func IsNotLikedPost(pid uuid.UUID, uid uint) bool {
+func IsNotLikedPost(pid string, uid uint) bool {
 	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Like{}).Error == gorm.ErrRecordNotFound
 }
 
-func IsNotCollectedPost(pid uuid.UUID, uid uint) bool {
+func IsNotCollectedPost(pid string, uid uint) bool {
 	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Collection{}).Error == gorm.ErrRecordNotFound
 }
 
 func LikePostById(c *gin.Context) {
-	id := uuid.MustParse(c.Param("id"))
+	id := c.Param("id")
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
 	if !IsNotLikedPost((id), uid) {
@@ -40,7 +39,7 @@ func LikePostById(c *gin.Context) {
 }
 
 func UnlikePostById(c *gin.Context) {
-	id := uuid.MustParse(c.Param("id"))
+	id := c.Param("id")
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 	if IsNotLikedPost((id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -54,7 +53,7 @@ func UnlikePostById(c *gin.Context) {
 }
 
 func CollectPostById(c *gin.Context) {
-	id := uuid.MustParse(c.Param("id"))
+	id := c.Param("id")
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
 	if !IsNotCollectedPost((id), uid) {
@@ -72,7 +71,7 @@ func CollectPostById(c *gin.Context) {
 }
 
 func UncollectPostById(c *gin.Context) {
-	id := uuid.MustParse(c.Param("id"))
+	id := c.Param("id")
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
 	if IsNotCollectedPost((id), uid) {

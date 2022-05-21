@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"upv.life/server/common"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
@@ -38,7 +37,7 @@ func CreateVideo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
-	postID := uuid.MustParse(c.Param("id"))
+	postID := c.Param("id")
 	if p, _ := service.GetSimplePostByID((postID)); p == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": "post not found"})
 		return

@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"upv.life/server/common"
@@ -17,13 +16,13 @@ import (
 )
 
 func GetPostById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 	var post *model.FullPost
 	var err error
 	if user, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
-		post, err = service.GetPostById(uint(id), user.(*middleware.AuthClaims).UserId, user.(*middleware.AuthClaims).Level)
+		post, err = service.GetPostById(id, user.(*middleware.AuthClaims).UserId, user.(*middleware.AuthClaims).Level)
 	} else {
-		post, err = service.GetPostById(uint(id), 0, 0)
+		post, err = service.GetPostById(id, 0, 0)
 	}
 
 	if err != nil {
@@ -111,7 +110,7 @@ func UpdatePost(c *gin.Context) {
 		})
 		return
 	}
-	body.ID = (c.Param("id"))
+	body.ID = c.Param("id")
 
 	if ok := isYourPost(c, body); !ok {
 		return
@@ -175,7 +174,7 @@ func UpdatePost(c *gin.Context) {
 }
 
 func DeletePostById(c *gin.Context) {
-	id := (c.Param("id"))
+	id := c.Param("id")
 	if ok := isYourPost(c, &model.Post{ID: id}); !ok {
 		return
 	}
@@ -211,7 +210,7 @@ func DeletePostsById(c *gin.Context) {
 
 func UpdatePostPv(c *gin.Context) {
 	pr := &model.PostRanking{}
-	id := uuid.MustParse(c.Param("id"))
+	id := c.Param("id")
 	post, _ := service.GetSimplePostByID(id)
 	if post == nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
@@ -374,7 +373,7 @@ func ReviewPost(c *gin.Context) {
 ////////////////////////////////////////////////////////////////////////////////
 
 func isYourPost(c *gin.Context, body *model.Post) bool {
-	post, err := service.GetSimplePostByID(uuid.MustParse(body.ID))
+	post, err := service.GetSimplePostByID(body.ID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"err": err})
 		return false

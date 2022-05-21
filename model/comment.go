@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +11,7 @@ type Comment struct {
 	ParentID  uint
 	TargetID  uint
 	Uid       uint           `gorm:"not null"`
-	Pid       uuid.UUID      `gorm:"not null"`
+	Pid       string         `gorm:"not null"`
 	Vid       uint           `gorm:"default:1"`
 	Content   string         `gorm:"size:200"`
 	Color     string         `gorm:"size:10"`

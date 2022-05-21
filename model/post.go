@@ -80,7 +80,7 @@ type Meta struct {
 
 type PostRanking struct {
 	ID     uint       `gorm:"primaryKey"`
-	Pid    uuid.UUID  `gorm:"not null;"`
+	Pid    string     `gorm:"not null;"`
 	Hits   uint       `gorm:"not null;"`
 	HitsAt *time.Time `gorm:"type:timestamp;not null;default:now()"`
 }
@@ -88,7 +88,7 @@ type PostRanking struct {
 type PostActicity struct {
 	Type         string // like, comment, collection
 	PostType     string // post, video
-	Pid          uuid.UUID
+	Pid          string
 	Uid          uint
 	PostTitle    string
 	UserName     string
