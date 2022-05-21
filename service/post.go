@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"upv.life/server/common"
 	"upv.life/server/db"
@@ -13,7 +14,7 @@ import (
 )
 
 // tips: left join 1:n  repeat data
-func GetSimplePostByID(id uint) (*model.Post, error) {
+func GetSimplePostByID(id uuid.UUID) (*model.Post, error) {
 	var post model.Post
 	if err := db.Orm.Model(&model.Post{}).
 		Where("posts.id = ?", id).
@@ -25,8 +26,8 @@ func GetSimplePostByID(id uint) (*model.Post, error) {
 	return &post, nil
 }
 
-func GetPostById(id uint, uid uint, level uint) (*model.Post, error) {
-	var post model.Post
+func GetPostById(id uint, uid uint, level uint) (*model.FullPost, error) {
+	var post model.FullPost
 	withUserQuery := ""
 	tx := db.Orm.Model(&model.Post{})
 

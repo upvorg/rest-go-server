@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Video struct {
 	ID            uint   `gorm:"primaryKey"`
@@ -12,7 +16,7 @@ type Video struct {
 	VideoUrl      string `gorm:"size:1024"`
 	Synopsis      string `gorm:"size:200"`
 	Uid           uint
-	Pid           uint
+	Pid           uuid.UUID
 	CreatedAt     *time.Time `gorm:"type:timestamp"`
 	UpdatedAt     *time.Time `gorm:"type:timestamp"`
 }

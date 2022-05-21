@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"upv.life/server/common"
@@ -17,7 +18,7 @@ import (
 
 func GetPostById(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	var post *model.Post
+	var post *model.FullPost
 	var err error
 	if user, exists := c.Get(middleware.CTX_AUTH_KEY); exists {
 		post, err = service.GetPostById(uint(id), user.(*middleware.AuthClaims).UserId, user.(*middleware.AuthClaims).Level)
@@ -110,8 +111,7 @@ func UpdatePost(c *gin.Context) {
 		})
 		return
 	}
-	id, _ := strconv.Atoi(c.Param("id"))
-	body.ID = uint(id)
+	body.ID = (c.Param("id"))
 
 	if ok := isYourPost(c, body); !ok {
 		return
@@ -175,8 +175,8 @@ func UpdatePost(c *gin.Context) {
 }
 
 func DeletePostById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
-	if ok := isYourPost(c, &model.Post{ID: uint(id)}); !ok {
+	id := (c.Param("id"))
+	if ok := isYourPost(c, &model.Post{ID: id}); !ok {
 		return
 	}
 	var err error
@@ -211,8 +211,8 @@ func DeletePostsById(c *gin.Context) {
 
 func UpdatePostPv(c *gin.Context) {
 	pr := &model.PostRanking{}
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
-	post, _ := service.GetSimplePostByID(uint(id))
+	id := uuid.MustParse(c.Param("id"))
+	post, _ := service.GetSimplePostByID(id)
 	if post == nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"err": "Post not found.",
@@ -224,7 +224,7 @@ func UpdatePostPv(c *gin.Context) {
 		Where("to_days(hits_at) = to_days(now())").
 		First(&pr).Error; err == gorm.ErrRecordNotFound {
 		db.Orm.Model(&model.PostRanking{}).Create(&model.PostRanking{
-			Pid:  uint(id),
+			Pid:  id,
 			Hits: 1,
 		})
 		return
@@ -374,7 +374,7 @@ func ReviewPost(c *gin.Context) {
 ////////////////////////////////////////////////////////////////////////////////
 
 func isYourPost(c *gin.Context, body *model.Post) bool {
-	post, err := service.GetSimplePostByID(body.ID)
+	post, err := service.GetSimplePostByID(uuid.MustParse(body.ID))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"err": err})
 		return false

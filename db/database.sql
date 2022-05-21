@@ -4,7 +4,7 @@ USE `gorm`;
 
 DROP TABLE IF EXISTS `posts`;
 CREATE TABLE `posts` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` varchar(36) NOT NULL,
   `cover` varchar(200) DEFAULT '',
   `title` varchar(60) NOT NULL,
   `content` text DEFAULT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE `posts` (
 DROP TABLE IF EXISTS `video_metas`;
 CREATE TABLE `video_metas` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `pid` int NOT NULL,
+  `pid` varchar(36) NOT NULL,
   `title_japanese` varchar(60) DEFAULT '',
   `title_romanji` varchar(60) DEFAULT '',
   `genre` varchar(10) NOT NULL COMMENT '番剧|动画电影|电影|电视剧',
@@ -40,7 +40,7 @@ CREATE TABLE `video_metas` (
 DROP TABLE IF EXISTS `post_rankings`;
 CREATE TABLE `post_rankings` (
 `id` int NOT NULL AUTO_INCREMENT,
-`pid` int NOT NULL,
+`pid` varchar(36) NOT NULL,
 `hits` int DEFAULT 0,
 `hits_at` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '日｜月｜总',
  PRIMARY KEY (`id`) USING BTREE
@@ -56,7 +56,7 @@ CREATE TABLE `videos` (
   `title_romanji` varchar(60) DEFAULT '',
   `video_url` varchar(1024) NOT NULL,
   `synopsis` varchar(200) DEFAULT '',
-  `pid` int NOT NULL,
+  `pid` varchar(36) NOT NULL,
   `uid` int NOT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -102,7 +102,7 @@ CREATE TABLE `comments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `parent_id` int DEFAULT NULL,
   `target_id` int DEFAULT NULL,
-  `pid` int NOT NULL,
+  `pid` varchar(36) NOT NULL,
   `uid` int NOT NULL,
   `vid` int DEFAULT 1,
   `content` varchar(200) NOT NULL,
@@ -117,7 +117,7 @@ DROP TABLE IF EXISTS `collections`;
 CREATE TABLE `collections` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uid` int NOT NULL,
-  `pid` int NOT NULL,
+  `pid` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
@@ -127,7 +127,7 @@ DROP TABLE IF EXISTS `likes`;
 CREATE TABLE `likes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uid` int NOT NULL,
-  `pid` int NOT NULL,
+  `pid` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;

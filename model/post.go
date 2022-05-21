@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -14,29 +15,45 @@ var (
 	POST_STATUS_DRAFT     uint = 5
 )
 
+//[]byte
 type Post struct {
-	ID              uint           `gorm:"primaryKey"`
-	Cover           string         `gorm:"size:200"`
-	Title           string         `gorm:"size:60;not null" binding:"required"`
-	Content         string         `gorm:"type:text"`
-	Uid             uint           `json:"-"`
-	Tags            string         `gorm:"size:100;column:tags"`
-	Status          uint           `gorm:"default:3"`
-	Type            string         `gorm:"default:post" binding:"required"`
-	IsPined         uint           `gorm:"default:1"`
-	IsRecommend     uint           `gorm:"default:1"`
-	IsOriginal      uint           `gorm:"default:1"`
-	CreatedAt       *time.Time     `gorm:"type:timestamp"`
-	UpdatedAt       *time.Time     `gorm:"type:timestamp"`
-	DeletedAt       gorm.DeletedAt `json:"-"`
-	Meta            *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
-	Creator         *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
-	Hits            uint           `gorm:"<-:false" json:"Hits,omitempty"`
-	LikesCount      uint           `gorm:"<-:false" json:"LikesCount,omitempty"`
-	CommentCount    uint           `gorm:"<-:false" json:"CommentCount,omitempty"`
-	CollectionCount uint           `gorm:"<-:false" json:"CollectionCount,omitempty"`
-	IsLiked         uint           `gorm:"<-:false" json:"IsLiked,omitempty"`
-	IsCollected     uint           `gorm:"<-:false" json:"IsCollected,omitempty"`
+	ID          string         `gorm:"primary_key;unique;type:varchar(36);not null"`
+	Cover       string         `gorm:"size:200"`
+	Title       string         `gorm:"size:60;not null" binding:"required"`
+	Content     string         `gorm:"type:text"`
+	Uid         uint           `json:"-"`
+	Tags        string         `gorm:"size:100;column:tags"`
+	Status      uint           `gorm:"default:3"`
+	Type        string         `gorm:"default:post" binding:"required"`
+	IsPined     uint           `gorm:"default:1"`
+	IsRecommend uint           `gorm:"default:1"`
+	IsOriginal  uint           `gorm:"default:1"`
+	CreatedAt   *time.Time     `gorm:"type:timestamp"`
+	UpdatedAt   *time.Time     `gorm:"type:timestamp"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
+	Meta        *VideoMeta     `gorm:"foreignKey:Pid" form:"meta,omitempty" json:"Meta,omitempty"`
+	Creator     *User          `gorm:"foreignKey:Uid" form:"user,omitempty" json:"Creator,omitempty"`
+}
+
+func (post *Post) BeforeCreate(tx *gorm.DB) error {
+	post.ID = uuid.NewString()
+	return nil
+}
+
+type PostInFeed struct {
+	Post       `gorm:"embedded"`
+	IsLiked    uint `gorm:"<-:false" json:"IsLiked"`
+	LikesCount uint `gorm:"<-:false" json:"LikesCount"`
+}
+
+type FullPost struct {
+	Post            `gorm:"embedded"`
+	Hits            uint `gorm:"<-:false" json:"Hits"`
+	IsLiked         uint `gorm:"<-:false" json:"IsLiked"`
+	LikesCount      uint `gorm:"<-:false" json:"LikesCount"`
+	IsCollected     uint `gorm:"<-:false" json:"IsCollected"`
+	CollectionCount uint `gorm:"<-:false" json:"CollectionCount"`
+	CommentCount    uint `gorm:"<-:false" json:"CommentCount"`
 }
 
 func PreloadCreatorOptinal() func(db *gorm.DB) *gorm.DB {
@@ -63,7 +80,7 @@ type Meta struct {
 
 type PostRanking struct {
 	ID     uint       `gorm:"primaryKey"`
-	Pid    uint       `gorm:"not null;"`
+	Pid    uuid.UUID  `gorm:"not null;"`
 	Hits   uint       `gorm:"not null;"`
 	HitsAt *time.Time `gorm:"type:timestamp;not null;default:now()"`
 }
@@ -71,7 +88,7 @@ type PostRanking struct {
 type PostActicity struct {
 	Type         string // like, comment, collection
 	PostType     string // post, video
-	Pid          uint
+	Pid          uuid.UUID
 	Uid          uint
 	PostTitle    string
 	UserName     string

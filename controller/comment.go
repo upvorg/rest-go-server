@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"upv.life/server/common"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
@@ -59,8 +60,8 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 	body.Uid = uint(c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId)
-	pid, _ := strconv.Atoi(c.Param("id"))
-	body.Pid = uint(pid)
+	pid := uuid.MustParse(c.Param("id"))
+	body.Pid = (pid)
 	if body.Content == "" {
 		c.AbortWithStatusJSON(http.StatusPaymentRequired, gin.H{
 			"err": "Content is required.",

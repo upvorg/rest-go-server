@@ -2,28 +2,28 @@ package controller
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
 	"upv.life/server/model"
 )
 
-func IsNotLikedPost(pid uint, uid uint) bool {
+func IsNotLikedPost(pid uuid.UUID, uid uint) bool {
 	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Like{}).Error == gorm.ErrRecordNotFound
 }
 
-func IsNotCollectedPost(pid uint, uid uint) bool {
+func IsNotCollectedPost(pid uuid.UUID, uid uint) bool {
 	return db.Orm.Where("uid = ? and pid = ?", uid, pid).First(&model.Collection{}).Error == gorm.ErrRecordNotFound
 }
 
 func LikePostById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := uuid.MustParse(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
-	if !IsNotLikedPost(uint(id), uid) {
+	if !IsNotLikedPost((id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "You have liked this post.",
 		})
@@ -33,16 +33,16 @@ func LikePostById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"err": db.Orm.Model(&model.Like{}).Create(&model.Like{
 			Uid: uid,
-			Pid: uint(id),
+			Pid: (id),
 		}).Error,
 	})
 
 }
 
 func UnlikePostById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := uuid.MustParse(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
-	if IsNotLikedPost(uint(id), uid) {
+	if IsNotLikedPost((id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "repeatedly",
 		})
@@ -54,10 +54,10 @@ func UnlikePostById(c *gin.Context) {
 }
 
 func CollectPostById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := uuid.MustParse(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
-	if !IsNotCollectedPost(uint(id), uid) {
+	if !IsNotCollectedPost((id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "You have collected this post.",
 		})
@@ -66,16 +66,16 @@ func CollectPostById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"err": db.Orm.Model(&model.Collection{}).Create(&model.Collection{
 			Uid: uid,
-			Pid: uint(id),
+			Pid: (id),
 		}).Error,
 	})
 }
 
 func UncollectPostById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := uuid.MustParse(c.Param("id"))
 	uid := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId
 
-	if IsNotCollectedPost(uint(id), uid) {
+	if IsNotCollectedPost((id), uid) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"err": "You have collected this post.",
 		})

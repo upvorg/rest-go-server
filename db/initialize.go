@@ -48,6 +48,7 @@ func Initialize() {
 			&model.Like{},
 			&model.Collection{},
 			&model.Feedback{},
+			&model.Tag{},
 		)
 	}
 

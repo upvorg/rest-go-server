@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"upv.life/server/common"
 	"upv.life/server/db"
 	"upv.life/server/middleware"
@@ -31,19 +32,18 @@ func GetVideosByPostId(c *gin.Context) {
 
 func CreateVideo(c *gin.Context) {
 	var (
-		postID uint64
-		video  model.Video
+		video model.Video
 	)
 	if err := c.BindJSON(&video); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
-	postID, _ = strconv.ParseUint(c.Param("id"), 10, 64)
-	if p, _ := service.GetSimplePostByID(uint(postID)); p == nil {
+	postID := uuid.MustParse(c.Param("id"))
+	if p, _ := service.GetSimplePostByID((postID)); p == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": "post not found"})
 		return
 	}
-	video.Pid = uint(postID)
+	video.Pid = postID
 	video.Uid = uint(c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId)
 	if err := db.Orm.Create(&video).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
