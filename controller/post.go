@@ -251,7 +251,7 @@ func GetPostDayRanking(c *gin.Context) {
 	posts := []*model.Post{}
 	size, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 	if err := db.Orm.Model(&model.Post{}).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Select("posts.*, SUM(post_rankings.hits) as Hits").
 		Joins("left join post_rankings on post_rankings.pid = posts.id and to_days(post_rankings.hits_at) = to_days(now())").
@@ -274,7 +274,7 @@ func GetPostMonthRanking(c *gin.Context) {
 	posts := []*model.Post{}
 	size, _ := strconv.Atoi(c.DefaultQuery("page_size", "30"))
 	if err := db.Orm.Model(&model.Post{}).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Select("posts.*, SUM(post_rankings.hits) as Hits").
 		Joins("left join post_rankings on post_rankings.pid = posts.id and DATE_FORMAT(post_rankings.hits_at,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m')").
@@ -297,7 +297,7 @@ func GetPostRanking(c *gin.Context) {
 	posts := []*model.Post{}
 	size, _ := strconv.Atoi(c.DefaultQuery("page_size", "50"))
 	if err := db.Orm.Model(&model.Post{}).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Select("posts.*, SUM(post_rankings.hits) as Hits").
 		Joins("left join post_rankings on post_rankings.pid = posts.id").

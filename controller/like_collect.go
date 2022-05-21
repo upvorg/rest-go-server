@@ -92,7 +92,7 @@ func GetLikesByUserId(c *gin.Context) {
 	postType := c.Query("type")
 	tx := db.Orm.Model(&model.Like{}).
 		Select("posts.*").
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Where("likes.uid = ?", uid)
 
@@ -122,7 +122,7 @@ func GetCollectionsByUserId(c *gin.Context) {
 	postType := c.Query("type")
 	tx := db.Orm.Model(&model.Collection{}).
 		Select("posts.*").
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Where("collections.uid = ?", uid)
 

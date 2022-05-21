@@ -40,7 +40,7 @@ func GetPostById(id uint, uid uint, level uint) (*model.Post, error) {
 	}
 
 	err := tx.
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Select(`
 		posts.*,
@@ -92,7 +92,7 @@ func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
 	}
 
 	tx.
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Select(`
 		posts.*,
@@ -149,7 +149,7 @@ func GetPostsByTag(tag string, c *gin.Context) (*[]model.Post, error) {
 	var posts []model.Post
 
 	if err := db.Orm.Scopes(model.Paginate(c)).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Where("tags LIKE ?", "%"+tag+"%").
 		Order("posts.created_at desc").
@@ -163,7 +163,7 @@ func GetPostsByTag(tag string, c *gin.Context) (*[]model.Post, error) {
 func GetRecommendPosts(size int) (*[]model.Post, error) {
 	var posts []model.Post
 	if err := db.Orm.Where("is_recommend = ?", 2).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Meta").
 		Order("posts.created_at desc").
 		Limit(size).

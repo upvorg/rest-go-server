@@ -28,7 +28,8 @@ func Initialize() {
 				IgnoreRecordNotFoundError: false,
 				Colorful:                  false,
 			},
-		)})
+		), QueryFields: true,
+		})
 	if err != nil {
 		panic(err.Error())
 	}

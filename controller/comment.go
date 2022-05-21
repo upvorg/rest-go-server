@@ -17,7 +17,7 @@ func GetComments(c *gin.Context) {
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
 	tx := db.Orm.Model(&model.Comment{}).
 		Scopes(model.Paginate(c)).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Post").
 		Preload("Children").
 		Preload("Children.Creator").
@@ -39,7 +39,7 @@ func GetCommentsByPostId(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var comments []model.Comment
 	err := db.Orm.Model(&model.Comment{}).
-		Preload("Creator").
+		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Children").
 		Preload("Children.Creator").
 		Where("pid = ? AND (parent_id IS NULL OR parent_id = 0)", id).

@@ -6,9 +6,13 @@
 
 - go version go1.18.1 darwin/amd64
 
+## RUN
+
+- go install github.com/cosmtrek/air@latest
+
 ```bash
 # debug
-env ENV=debug fresh
+env ENV=debug air
 # sit
 env ENV=release go run main.go
 
@@ -17,10 +21,6 @@ cp ./.env /.env
 go build -o /app
 env ENV=release /app &
 ```
-
-## Go Packages
-
-- go get -d github.com/pilu/fresh
 
 ## Roadmap
 
