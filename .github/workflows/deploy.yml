@@ -37,3 +37,5 @@ jobs:
             cd /yszm
             nohup ./main & >/dev/null
             df -h
+            whoami
+            pwd

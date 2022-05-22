@@ -26,19 +26,16 @@ func GetVideosByPostId(c *gin.Context) {
 }
 
 func CreateVideo(c *gin.Context) {
-	var (
-		video model.Video
-	)
+	var video model.Video
 	if err := c.BindJSON(&video); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
-	postID := c.Param("id")
-	if p, _ := service.GetSimplePostByID((postID)); p == nil {
+	video.Pid = c.Param("id")
+	if p, _ := service.GetSimplePostByID((video.Pid)); p == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"err": "post not found"})
 		return
 	}
-	video.Pid = postID
 	video.Uid = uint(c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims).UserId)
 	if err := db.Orm.Create(&video).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
