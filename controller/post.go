@@ -179,7 +179,7 @@ func DeletePostById(c *gin.Context) {
 		return
 	}
 	var err error
-	err = db.Orm.Delete(&model.Post{}, id).Error
+	err = db.Orm.Where("id = ?", id).Delete(&model.Post{}).Error
 	if e := db.Orm.Where("pid = ?", id).Delete(&model.VideoMeta{}).Error; e != nil {
 		err = e
 	}

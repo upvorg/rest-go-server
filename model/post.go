@@ -42,18 +42,18 @@ func (post *Post) BeforeCreate(tx *gorm.DB) error {
 
 type PostInFeed struct {
 	Post       `gorm:"embedded"`
-	IsLiked    uint `gorm:"<-:false" json:"IsLiked"`
-	LikesCount uint `gorm:"<-:false" json:"LikesCount"`
+	IsLiked    uint `json:"IsLiked"`
+	LikesCount uint `json:"LikesCount"`
 }
 
 type FullPost struct {
 	Post            `gorm:"embedded"`
-	Hits            uint `gorm:"<-:false" json:"Hits"`
-	IsLiked         uint `gorm:"<-:false" json:"IsLiked"`
-	LikesCount      uint `gorm:"<-:false" json:"LikesCount"`
-	IsCollected     uint `gorm:"<-:false" json:"IsCollected"`
-	CollectionCount uint `gorm:"<-:false" json:"CollectionCount"`
-	CommentCount    uint `gorm:"<-:false" json:"CommentCount"`
+	Hits            uint `json:"Hits"`
+	IsLiked         uint `json:"IsLiked"`
+	LikesCount      uint `json:"LikesCount"`
+	IsCollected     uint `json:"IsCollected"`
+	CollectionCount uint `json:"CollectionCount"`
+	CommentCount    uint `json:"CommentCount"`
 }
 
 func PreloadCreatorOptinal() func(db *gorm.DB) *gorm.DB {

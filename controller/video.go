@@ -14,14 +14,10 @@ import (
 
 func GetVideosByPostId(c *gin.Context) {
 	var (
-		postID uint64
+		postID string
 		videos []*model.Video
 	)
-	postID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"err": "post id is invalid"})
-		return
-	}
+	postID = c.Param("id")
 	if err := db.Orm.Where("pid = ?", postID).Order("episode DESC").Find(&videos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return

@@ -36,13 +36,13 @@ func GetComments(c *gin.Context) {
 }
 
 func GetCommentsByPostId(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	pid := c.Param("id")
 	var comments []model.Comment
 	err := db.Orm.Model(&model.Comment{}).
 		Scopes(model.PreloadCreatorOptinal()).
 		Preload("Children").
 		Preload("Children.Creator").
-		Where("pid = ? AND (parent_id IS NULL OR parent_id = 0)", id).
+		Where("pid = ? AND (parent_id IS NULL OR parent_id = 0)", pid).
 		Order("created_at DESC").Find(&comments).Error
 	c.JSON(http.StatusOK, gin.H{
 		"data": comments,
@@ -68,7 +68,8 @@ func CreateComment(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"err": db.Orm.Create(body).Error,
+		"err":  db.Orm.Create(body).Error,
+		"data": body,
 	})
 }
 

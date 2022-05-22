@@ -76,8 +76,8 @@ func GetPostById(id string, uid uint, level uint) (*model.FullPost, error) {
 }
 
 //TODO: 前台不返回不为 POST_STATUS_PUBLISHED 的文章
-func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.Post, error) {
-	var posts []model.Post
+func GetPostsByMetaType(m model.Meta, c *gin.Context) (*[]model.FullPost, error) {
+	var posts []model.FullPost
 	withUserQuery := ""
 	tx := db.Orm.Model(&model.Post{}).Scopes(model.Paginate(c))
 	user, exists := c.Get(middleware.CTX_AUTH_KEY)
