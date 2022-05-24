@@ -18,12 +18,13 @@ func Register(user *model.User) (*model.User, string, error) {
 	}
 
 	user.Pwd = common.HashAndSalt([]byte(user.Pwd))
-	result := db.Orm.Create(&model.User{
-		Name:     user.Name,
-		Nickname: user.Nickname,
-		Pwd:      user.Pwd,
-		Level:    4,
-		Status:   2,
+	result := db.Orm.Model(&model.User{}).Create(map[string]interface {
+	}{
+		"Name":     user.Name,
+		"Nickname": user.Nickname,
+		"Pwd":      user.Pwd,
+		"Level":    4,
+		"Status":   2,
 	})
 
 	if result.Error != nil {
