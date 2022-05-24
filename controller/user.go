@@ -190,11 +190,24 @@ func UpdateUserByName(c *gin.Context) {
 	}
 
 	ctxUser := c.MustGet(middleware.CTX_AUTH_KEY).(*middleware.AuthClaims)
-	if common.IsRoot(ctxUser.Level) || common.IsAdmin(ctxUser.Level) {
-		user, _ := service.GetUserByName(userName)
-		if user != nil &&
-			// 低等级不能修改高等级只能修改自己
-			(ctxUser.UserId != user.ID && ctxUser.Level < user.Level) ||
+	user, err := service.GetUserByName(userName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+
+	if !common.IsRoot(ctxUser.Level) && !common.IsAdmin(ctxUser.Level) {
+		if user.Status != body.Status || user.Level != body.Level || userName != ctxUser.Name {
+			c.JSON(http.StatusForbidden, gin.H{
+				"err": "Forbidden.",
+			})
+		}
+	} else {
+		if
+		// 低等级不能修改高等级只能修改自己
+		(ctxUser.UserId != user.ID && body.Level <= ctxUser.Level) ||
 			//除了ROOT 其他角色不能修改自己的等级和状态
 			(!common.IsRoot(ctxUser.Level) && ctxUser.UserId == user.ID &&
 				(body.Status != user.Level || body.Level != user.Level)) {
@@ -204,20 +217,6 @@ func UpdateUserByName(c *gin.Context) {
 			})
 			return
 		}
-	} else {
-		if userName != ctxUser.Name || body.Status != 0 || body.Level != 0 {
-			c.JSON(http.StatusForbidden, gin.H{
-				"err": "Forbidden.",
-			})
-			return
-		}
-	}
-
-	if !service.IsUserExistByName(userName) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"err": "User not found.",
-		})
-		return
 	}
 
 	body.Name = ""
