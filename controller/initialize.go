@@ -10,15 +10,16 @@ func Initialize(r *gin.Engine) {
 	api := r.Group("/api")
 	api.POST("/register", Register)
 	api.POST("/login", Login)
+	api.GET("/auth/qq", QQLogin)
 
 	api.GET("/users", GetUsers)
 	api.GET("/user/:name", GetUserByName)
 	api.GET("/user", middleware.ShouldBeLogin(), GetUser)
+	api.GET("/user/stat", middleware.ShouldBeLogin(), GetUserStat)
 	api.PUT("/user/:name", middleware.ShouldBeLogin(), UpdateUserByName)
 	// :name is id!!
 	api.GET("/user/:name/likes", middleware.ShouldBeLogin(), GetLikesByUserId)
 	api.GET("/user/:name/collections", middleware.ShouldBeLogin(), GetCollectionsByUserId)
-	api.GET("/user/stat", middleware.ShouldBeLogin(), GetUserStat)
 	api.GET("/user/post/activity", middleware.ShouldBeLogin(), GetUserPostActivity)
 
 	api.GET("/post/:id", GetPostById)

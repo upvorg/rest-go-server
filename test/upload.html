@@ -5,27 +5,52 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+
+    <style>
+      .inline-block {
+        display: inline-block;
+        margin-right: 1em;
+      }
+    </style>
+
+    <script
+      src="http://connect.qq.com/qc_jssdk.js"
+      data-appid="APPID"
+      data-redirecturi="."
+    ></script>
   </head>
   <body>
-    <form
-      action="http://localhost:8080/api/upload/image"
-      method="post"
-      target="_self"
-      enctype="multipart/form-data"
-    >
-      <input type="file" name="file" id="file" />
-      <button type="submit">Send</button>
-    </form>
-    <hr />
+    <div class="inline-block">
+      <h2>smms</h2>
+      <form
+        action="http://localhost:8080/api/upload/image"
+        method="post"
+        target="_self"
+        enctype="multipart/form-data"
+      >
+        <input type="file" name="file" id="file" accept="image/*" />
+        <button type="submit">Send</button>
+      </form>
+      <hr />
+    </div>
 
-    <form
-      action="http://localhost:8080/api/upload"
-      method="post"
-      target="_self"
-      enctype="multipart/form-data"
-    >
-      <input type="file" name="file" id="file" />
-      <button type="submit">Send</button>
-    </form>
+    <div class="inline-block">
+      <h2>local</h2>
+      <form
+        action="http://localhost:8080/api/upload"
+        method="post"
+        target="_self"
+        enctype="multipart/form-data"
+      >
+        <input type="file" name="file" id="file" accept="image/*" />
+        <button type="submit">Send</button>
+      </form>
+      <hr />
+    </div>
+
+    <span id="qqLoginBtn" scope="get_user_info"></span>
+    <script type="text/javascript">
+      QC.Login({ btnId: 'qqLoginBtn' })
+    </script>
   </body>
 </html>

@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	ID        uint           `gorm:"primaryKey"`
+	QQOpenID  string         `json:"-" gorm:"type:varchar(36);column:qq_openid;"`
 	Name      string         `gorm:"size:16;unique_index"`
 	Pwd       string         `json:"-"`
 	Nickname  string         `gorm:"size:16"`

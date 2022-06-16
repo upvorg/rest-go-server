@@ -77,10 +77,11 @@ CREATE TABLE `tags` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `qq_openid` varchar(36) DEFAULT NULL,
   `name` varchar(16) NOT NULL UNIQUE,
   `nickname` varchar(16) DEFAULT '',
   `avatar` varchar(100) DEFAULT 'https://q1.qlogo.cn/g?b=qq&nk=7619376472&s=640',
-  `pwd` varchar(100) NOT NULL,
+  `pwd` varchar(100) DEFAULT NULL,
   `email` varchar(50) DEFAULT NULL UNIQUE,
   `bio` varchar(100) DEFAULT '这个人很酷，什么都没有留下',
   `level` TINYINT(1) NOT NULL DEFAULT 4 COMMENT '1=>超级管理员 | 2=>管理员 | 3=>创作者 | 4=>普通用户',
