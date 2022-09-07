@@ -54,6 +54,7 @@ scp -rp root@upv.life:/path/filename /path #将远程文件从服务器下载到
 scp -rp /Users/g/code/web/dist/admin/* root@upv.life:/var/www/admin
 scp -rp /Users/g/code/web/dist/index/* root@upv.life:/var/www/html
 
+gzip -d ./auto-backup-db/v2/mysql-v2.2022-09-05-01-57-24.sql.gz
 
 # docker up (todo)
 docker-compose up -d -f docker-compose.yml --env-file .env
