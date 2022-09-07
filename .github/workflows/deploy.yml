@@ -30,7 +30,7 @@ jobs:
           scp_source: ./main
           scp_target: /yszm/
           before_script: |
-            sudo fuser -k 8081/tcp
+            fuser -k 8081/tcp
           after_script: |
             #./main & >  /dev/null 2>&1
             #nohup ./main & >/dev/null
