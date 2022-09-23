@@ -35,7 +35,8 @@ jobs:
             #./main & >  /dev/null 2>&1
             #nohup ./main & >/dev/null
             cd /yszm
-            nohup ./main & >/dev/null
+            #nohup ./mxain & >/dev/null
+            service goweb restart
+            service goweb status
             df -h
             whoami
-            pwd
