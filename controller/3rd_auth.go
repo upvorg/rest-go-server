@@ -2,7 +2,7 @@ package controller
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -57,7 +57,7 @@ func QQLogin(c *gin.Context) {
 		"&redirect_uri=http://" + config.Domain + "/qq_login" +
 		"&fmt=json"
 	resp, _ := http.Get(url)
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	var qqAccessTokenResp QQAccessTokenResp
 	json.Unmarshal(body, &qqAccessTokenResp)
@@ -72,7 +72,7 @@ func QQLogin(c *gin.Context) {
 	// get openid
 	url = "https://graph.qq.com/oauth2.0/me?access_token=" + qqAccessTokenResp.Access_token + "&fmt=json"
 	resp, _ = http.Get(url)
-	body, _ = ioutil.ReadAll(resp.Body)
+	body, _ = io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	var qqOpenIDResp QQOpenIDResp
 	json.Unmarshal(body, &qqOpenIDResp)
@@ -111,7 +111,7 @@ func QQLogin(c *gin.Context) {
 		url = "https://graph.qq.com/user/get_user_info?access_token=" + qqAccessTokenResp.Access_token +
 			"&oauth_consumer_key=" + config.QQAppID + "&openid=" + qqOpenIDResp.OpenID
 		resp, _ = http.Get(url)
-		body, _ = ioutil.ReadAll(resp.Body)
+		body, _ = io.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		var qqGetUserInfoResp QQGetUserInfoResp
 		json.Unmarshal(body, &qqGetUserInfoResp)

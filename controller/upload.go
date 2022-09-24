@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -80,15 +78,15 @@ func FileUploader(c *gin.Context) {
 
 	prefix := UploadPath + time.Now().Format("2006/01/02") + "/"
 	if _, err := os.Stat(prefix); os.IsNotExist(err) {
-		mask := syscall.Umask(0)
+		// mask := syscall.Umask(0)
 		if err := os.MkdirAll(prefix, 0777); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": err.Error(),
 			})
-			defer syscall.Umask(mask)
+			// defer syscall.Umask(mask)
 			return
 		}
-		defer syscall.Umask(mask)
+		// defer syscall.Umask(mask)
 	}
 
 	filename := header.Filename
@@ -133,7 +131,7 @@ func _SMMSUploder(file multipart.File, fileHeader *multipart.FileHeader, token s
 	req.Header.Add("Content-Type", bodyWriter.FormDataContentType())
 
 	response, _ := http.DefaultClient.Do(req)
-	body, _ := ioutil.ReadAll(response.Body)
+	body, _ := io.ReadAll(response.Body)
 	var data map[string]interface{}
 	json.Unmarshal(body, &data)
 
@@ -164,9 +162,11 @@ func _SMMSAuth() string {
 	if response, err := http.Post(`https://sm.ms/api/v2/token?username=`+config.SMMSUserName+`&password=`+config.SMMSPassword, "application/json", nil); err != nil {
 		return ""
 	} else {
-		body, _ := ioutil.ReadAll(response.Body)
+		body, _ := io.ReadAll(response.Body)
 		var data map[string]interface{}
 		json.Unmarshal(body, &data)
 		return data["data"].(map[string]interface{})["token"].(string)
 	}
 }
+
+// build linux,386 darwin,!cgo
