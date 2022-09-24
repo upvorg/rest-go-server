@@ -26,8 +26,8 @@ func Initialize() {
 		log.Fatalf("failed to load .env file: %v", err)
 	}
 
-	if os.Getenv("ENV") != "" {
-		AppMode = os.Getenv("ENV")
+	if os.Getenv("APP_MODE") != "" {
+		AppMode = os.Getenv("APP_MODE")
 	}
 
 	if os.Getenv("APP_PORT") != "" {
