@@ -20,23 +20,43 @@ jobs:
           go mod download
           go build -o ./main ./main.go
 
-      - name: SSH Server Deploy
-        uses: kostya-ten/ssh-server-deploy@v4
+      - name: SSH-SCP Server Deploy
+        # You may pin to the exact commit or the version.
+        # uses: ilCollez/ssh-scp-deploy@e2b7f7ef2fddd6493b3766f13b8fa8a1b91d9468
+        uses: ilCollez/ssh-scp-deploy@v1.1.0
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 23.224.47.160
           port: 22
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          scp_source: ./main
-          scp_target: /yszm/
-          before_script: |
-            fuser -k 8081/tcp
-          after_script: |
-            #./main & >  /dev/null 2>&1
-            #nohup ./main & >/dev/null
+          username: root
+          password: passw0rd
+          files: |
+            ./main
+          remote-path: "/yszm/"
+          before-upload: |
+            service goweb stop
+          after-upload: |
             cd /yszm
-            #nohup ./mxain & >/dev/null
-            service goweb restart
+            service goweb start
             service goweb status
             df -h
-            whoami
+
+#       - name: SSH Server Deploy
+#         uses: kostya-ten/ssh-server-deploy@v4
+#         with:
+#           host: ${{ secrets.SSH_HOST }}
+#           port: 22
+#           username: ${{ secrets.SSH_USER }}
+#           password: ${{ secrets.SSH_PASSWORD }}
+#           scp_source: ./main
+#           scp_target: /yszm/
+#           before_script: |
+#             fuser -k 8081/tcp
+#           after_script: |
+#             #./main & >  /dev/null 2>&1
+#             #nohup ./main & >/dev/null
+#             cd /yszm
+#             #nohup ./mxain & >/dev/null
+#             service goweb restart
+#             service goweb status
+#             df -h
+#             whoami
