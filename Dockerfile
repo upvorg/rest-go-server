@@ -8,7 +8,7 @@ RUN go install github.com/cosmtrek/air@latest
 ENTRYPOINT ["air"]
 EXPOSE 8080 3306
 
-FROM alpine:latest AS production
+FROM golang:latest AS production
 RUN apt-get update && apt-get install -y
 WORKDIR /app
 ENV ENV=release
