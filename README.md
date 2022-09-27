@@ -2,10 +2,6 @@
 
 [![deploy](https://github.com/upvorg/server2/actions/workflows/deploy.yml/badge.svg)](https://github.com/upvorg/server2/actions/workflows/deploy.yml)
 
-## Envrionment
-
-- go version go1.18.1 darwin/amd64
-
 ## RUN
 
 - go install github.com/cosmtrek/air@latest
@@ -22,13 +18,11 @@ go build -o /app
 env ENV=release /app &
 ```
 
-## Roadmap
-
-- Collectmark
-
 ## Refs
 
 - https://rapidapi.com/search/anime
+- https://github.com/Anime-Lists/anime-lists
+- https://github.com/MALSync/MALSync
 - https://darjun.github.io/2020/04/04/godailylib/validator/
 - https://www.digitalocean.com/community/tutorials/how-to-deploy-a-go-web-application-using-nginx-on-ubuntu-18-04
 - https://www.digitalocean.com/community/tutorials/how-to-install-go-on-ubuntu-20-04

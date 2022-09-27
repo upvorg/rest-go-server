@@ -4,8 +4,8 @@ WORKDIR /app
 ENV ENV=debug
 COPY . /app
 RUN go get -v
-RUN go install github.com/pilu/fresh
-ENTRYPOINT ["fresh"]
+RUN go install github.com/cosmtrek/air@latest
+ENTRYPOINT ["air"]
 EXPOSE 8080 3306
 
 FROM alpine:latest AS production
