@@ -21,10 +21,12 @@ env ENV=release /app &
 ```bash
 # docker
 docker-compose up
-docker buildx build --platform=linux/amd64 -t yszm/api:0.0.1 . # Apple M1
 docker-compose build
 
-docker run --name yszm yszm/api:0.0.1
+docker buildx build --platform=linux/amd64 -t yszm/api:0.0.1 . # Apple M1
+docker build -t shiyiya/yszm-api .
+
+docker run --name yszm shiyiya/yszm-api
 ```
 
 ## Refs
