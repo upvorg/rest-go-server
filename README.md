@@ -18,6 +18,15 @@ go build -o /app
 env ENV=release /app &
 ```
 
+```bash
+# docker
+docker-compose up
+docker buildx build --platform=linux/amd64 -t yszm/api:0.0.1 . # Apple M1
+docker-compose build
+
+docker run --name yszm yszm/api:0.0.1
+```
+
 ## Refs
 
 - https://rapidapi.com/search/anime
@@ -49,8 +58,4 @@ scp -rp /Users/g/code/web/dist/admin/* root@upv.life:/var/www/admin
 scp -rp /Users/g/code/web/dist/index/* root@upv.life:/var/www/html
 
 gzip -d ./auto-backup-db/v2/mysql-v2.2022-09-05-01-57-24.sql.gz
-
-# docker up (todo)
-docker-compose up -d -f docker-compose.yml --env-file .env
-docker-
 ```
