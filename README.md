@@ -19,6 +19,18 @@ env ENV=release /app &
 ```
 
 ```bash
+# -- on local machine
+docker tag yszm-api shiyiya/yszm-api
+docker push shiyiya/yszm-api
+# -- on server
+docker pull shiyiya/yszm-api
+
+# -- on local machine
+docker save -o image.zip example
+scp image.zip <user>@<server-addres>:<target-location>
+# -- on server
+docker load -i <path-to-image.zip>
+
 # docker
 docker-compose up
 docker-compose build

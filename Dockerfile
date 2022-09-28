@@ -8,11 +8,15 @@ RUN go install github.com/cosmtrek/air@latest
 ENTRYPOINT ["air"]
 EXPOSE 8080 3306
 
-FROM golang:latest AS production
-RUN apt-get update && apt-get install -y
+FROM golang:latest AS builder
+WORKDIR /app
+COPY . ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o runner -a -installsuffix .
+
+FROM alpine:latest AS production
 WORKDIR /app
 ENV APP_MODE=release
-COPY . /app
-RUN go build -o runner
+COPY --from=builder /app/runner /app/runner
+COPY --from=builder /app/.env /app/.env
 EXPOSE 8080
 ENTRYPOINT ["./runner"]
