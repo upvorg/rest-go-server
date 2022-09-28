@@ -1,4 +1,4 @@
-FROM golang:alpine AS development
+FROM golang:latest AS development
 RUN apt-get update && apt-get install -y
 WORKDIR /app
 ENV ENV=debug
@@ -8,10 +8,10 @@ RUN go install github.com/cosmtrek/air@latest
 ENTRYPOINT ["air"]
 EXPOSE 8080 3306
 
-FROM golang:latest AS production
-RUN apt-get update && apt-get install -y
-WORKDIR /app
-ENV ENV=release
-RUN go build -o app
-EXPOSE 8080
-ENTRYPOINT ["./app"]
+# FROM golang:latest AS production
+# RUN apt-get update && apt-get install -y
+# WORKDIR /app
+# ENV ENV=release
+# RUN go build -o app
+# EXPOSE 8080
+# ENTRYPOINT ["./app"]

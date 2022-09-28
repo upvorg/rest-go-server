@@ -28,7 +28,7 @@ CREATE TABLE `video_metas` (
   `title_japanese` varchar(60) DEFAULT '',
   `title_romanji` varchar(60) DEFAULT '',
   `genre` varchar(10) NOT NULL COMMENT '番剧|动画电影|电影|电视剧',
-  `region` varchar(10) DEFAULT '美国｜日本｜中国',
+  `region` varchar(10) DEFAULT '' COMMENT '美国｜日本｜中国',
   `is_end` TINYINT(1) DEFAULT 1 COMMENT '1=>未完结 | 2=>完结',
   `episodes` int DEFAULT 0 COMMENT "共几集",
   `publish_date` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',

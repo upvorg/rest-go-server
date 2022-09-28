@@ -15,17 +15,16 @@ services:
     expose:
       - 3306
     volumes:
-      - ./docker/mysql:/var/lib/mysql
+      # - ./docker/mysql:/var/lib/mysql
       - ./docker/import:/docker-entrypoint-initdb.d
-
+      - ./docker/mysql/my.cnf:/etc/my.cnf
     environment:
-      # MYSQL_USER: ${MYSQL_USER}
-      # MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      # MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ALLOW_EMPTY_PASSWORD: false
-      MYSQL_RANDOM_ROOT_PASSWORD: false
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$MYSQL_ROOT_PASSWORD']
+      timeout: 20s
+      retries: 5
 
   backend:
     container_name: app
@@ -35,7 +34,6 @@ services:
       - ${APP_PORT}:8080
     volumes:
       - .:/app
-    env_file:
-      - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
